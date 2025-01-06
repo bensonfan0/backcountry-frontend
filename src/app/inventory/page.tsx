@@ -1,23 +1,30 @@
-import Link from 'next/link'
-import Grid from '@mui/material/Unstable_Grid2';
+"use client";
+
+import Grid from '@mui/material/Grid2';
+import ContainerCard from '@/components/container/containerCard';
+import ToolWindow from '@/components/tool/toolWindow';
+import styled from 'styled-components';
+
+const ToolContainer = styled.div`
+    width: 100%;
+    margin-top: auto;
+`
+
+const Page = styled.div`
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 40px 0 0 0;
+`
 
 function Inventory() {
     return (
-        <Grid container spacing={3} className="w-full min-h-screen p-10">
-            <Grid xs={12}>
-                <Link href="/" className="hover:bg-blue-500 transition duration-300 ease-in-out">Home</Link>
-            </Grid>
-            <Grid xs={4}>
-                {/* Some ds.js stacked bar chart to capture inventory room */}
-                <p>TODO: stacked bar chart</p>
-            </Grid>
-            <Grid xs={8}>
-                {/* Some data table to track items */}
-                <p>
-                    TODO: data table
-                </p>
-            </Grid>
-        </Grid>
+        <Page>
+            <ContainerCard id={1} title={"Backpack"} content={"weight"} />
+            <ToolContainer>
+                <ToolWindow />
+            </ToolContainer>
+        </Page>
     )
 }
 

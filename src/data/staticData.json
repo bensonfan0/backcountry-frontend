@@ -1,0 +1,33 @@
+{
+    "backpack": {
+        "name": "dwa",
+        "note": "",
+        "items": [
+            {
+                "name": "",
+                "note": "",
+                "category": "food"
+            },
+            {
+                "name": "",
+                "note": "",
+                "category": "clothing"
+            },
+            {
+                "name": "",
+                "note": "",
+                "category": "cookware"
+            },
+            {
+                "name": "",
+                "note": "",
+                "category": "hygiene"
+            },
+            {
+                "name": "",
+                "note": "",
+                "category": "hardware"
+            }
+        ]
+    }
+}

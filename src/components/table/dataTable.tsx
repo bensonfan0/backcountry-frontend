@@ -23,8 +23,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ConfirmationDialog from './confirmationDialog';
 import { visuallyHidden } from '@mui/utils';
-import { putTrailData } from '../../rest/restapi';
-import { FormData } from './page';
+import { putTrailData } from '../../../rest/restapi';
+import { FormData } from '../../app/page';
 
 interface dataTableProps {
     _rows: Data[];

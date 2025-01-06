@@ -3,11 +3,12 @@
 import { fetchTrailData, putTrailData } from '../../rest/restapi';
 import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import TextField from '@mui/material/TextField';
-import DataTable, { Data } from './dataTable';
+import DataTable, { Data } from '../components/table/dataTable';
 import Link from 'next/link'
 import { delay } from '../../utility/utilityfunctions';
+import styled from 'styled-components';
 
 export interface FormData {
   name: string;
@@ -15,6 +16,10 @@ export interface FormData {
   length: string;
   [key: string]: string;
 }
+
+const StyledDiv = styled.div`
+  color: white;
+`;
 
 export default function Home() {
 
@@ -47,7 +52,7 @@ export default function Home() {
   const putData = async (): Promise<void> => {
     try {
       let toAdd: any = {
-        data:[],
+        data: [],
       }
       const data: any = await fetchTrailData() // use only the freshest data
       toAdd.data = data
@@ -87,53 +92,55 @@ export default function Home() {
 
   const getInputForm = () => {
     return <form onSubmit={doSubmit}>
-      <div className="pb-5">
-        <TextField label="Name" variant="outlined"
+      <StyledDiv className="pb-5">
+        <TextField
+          label="Name"
+          variant="standard"
           type="text"
           id="name"
           name="name"
           onChange={handleInputChange}
           required
         />
-      </div>
-      <div className="pb-5">
-        <TextField label="Length" variant="outlined"
+      </StyledDiv>
+      <StyledDiv className="pb-5">
+        <TextField
+          label="Length"
+          variant="standard"
           type="length"
           id="length"
           name="length"
           onChange={handleInputChange}
           required
         />
-      </div>
-      <div className="pb-5">
-        <TextField label="Location" variant="outlined"
+      </StyledDiv>
+      <StyledDiv className="pb-5">
+        <TextField
+          label="Location"
+          variant="standard"
           id="location"
           name="location"
           onChange={handleInputChange}
           required
         />
-      </div>
+      </StyledDiv>
       <Button variant="outlined" type="submit">Submit</Button>
     </form>
   }
 
   // 12 cols per row
   return (
-    <Grid container spacing={3} className="w-full min-h-screen p-10">
-      <Grid xs={12}>
-        <Link href="/inventory" className="hover:bg-blue-500 transition duration-300 ease-in-out">Inventory Planning</Link>
-      </Grid>
-      <Grid xs={3}>
+    <Grid container spacing={3} className="p-10 h-screen">
+      <Grid size={3}>
         <p className="font-mono text-lg pb-10">Backcountry Camping Ideas</p>
         {getInputForm()}
+        <Button variant="outlined" onClick={fetchData} sx={{ margin: '10px 0 0 0'}}>fetch Data</Button>
       </Grid>
-      <Grid xs={9}>Todo: add map</Grid>
-      <Grid xs={12}>
+      <Grid size={9}>
         <main className="flex flex-col items-center justify-between p-24">
           <div className="pb-10">
-            <Button variant="outlined" onClick={fetchData}>fetch Data</Button>
           </div>
-          <DataTable _rows={constructRows()}/>
+          <DataTable _rows={constructRows()} />
         </main>
       </Grid>
     </Grid>
