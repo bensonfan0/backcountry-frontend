@@ -12,8 +12,8 @@ interface CardProps {
 }
 
 const ContainerDiv = styled.div`
-    flex: 1;
-    overflow-y: auto;
+    /* flex: 1; */
+    /* overflow-y: auto; */
 `
 
 const ContainerCardContainer = styled.div`
@@ -41,7 +41,7 @@ const ContainerCardTitle = styled.h2`
     color: #000;
 `;
 
-const ContainerCardText = styled.p`
+const ContainerCardText = styled.div`
     font-size: 1em;
     color: #000;
 `;
@@ -75,7 +75,6 @@ const ContainerCard = ({ id, title, content, imageUrl }: CardProps) => {
 
     return (
         <ContainerDiv>
-
             {/* This needs to be a map of container backpacks */}
             <ContainerCardContainer ref={setNodeRef} style={hoverOverStyle}>
                 {imageUrl && <ContainerCardImage src={imageUrl} alt={title} />}
@@ -83,9 +82,9 @@ const ContainerCard = ({ id, title, content, imageUrl }: CardProps) => {
                     <ContainerCardTitle>{title}</ContainerCardTitle>
                     <ContainerCardText>{content}</ContainerCardText>
                     <ContainerTools>
-                        {tools.map((tool) => {
+                        {tools.map((tool, index) => {
                             return (
-                                <div>
+                                <div key={index}>
                                     {tool.name} {tool.category} {tool.weight}
                                 </div>
                             )

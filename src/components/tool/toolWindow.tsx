@@ -20,21 +20,78 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import Input from '@mui/material/Input';
+import { alpha } from '@mui/material/styles';
+import InputBase from '@mui/material/InputBase';
+import Autocomplete from '@mui/material/Autocomplete';
+import SearchIcon from '@mui/icons-material/Search';
 
 import Draggable from '../dragging/draggable';
 import Droppable from '../dragging/droppable';
 
-import { DragOverlay, useDraggable } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
+
 
 const Container = styled.div`
     display: flex;
+    align-items: flex-start;
+    /* height: calc(100vh - 40px); // offset by the header */
+    width: 350px;
+    /* flex-direction: column; */
+`
+
+const ToolScrollTable = styled.div`
+    width: 80%;
+    height: calc(100vh - 40px);
+    overflow-y: auto;
+`
+
+const ToolContainerHeader = styled.div`
+    display: flex;
+`
+
+const ToolContainerBody = styled.div`
+    display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+    max-width: 100%;
+    background-color: #fff;
+    padding: 0 20px 0 0;
+    overflow-y: scroll;
 `
 
 const ButtonContainer = styled.div`
-    margin-left: auto;
-    padding-right: 40px;
-    background-color: '#fff';
+    padding: 10px 0 0 0;
+    width: 20%;
+    /* margin-left: auto; */
+    /* padding-right: 40px; */
+    /* background-color: '#fff'; */
+`
+
+const ToolName = styled.div`
+    font-size: 13px;
+    font-weight: 15px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`
+
+const ToolWeight = styled.div`
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`
+
+const ToolTextContainer = styled.div`
+    padding: 0 0 0 10px;
+    display: 'flex';
+    flex-direction: 'column';
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 `
 
 enum Category {
@@ -56,7 +113,7 @@ let initData: Data[] = []
 for (let i = 0; i < 15; i++) {
     initData.push({
         id: i,
-        name: `tool ${i}`,
+        name: `tool dwadwadwadwadwadwadwadwadadwadwadwa ${i}`,
         category: Category.CLOTHING,
         weight: 100
     })
@@ -68,7 +125,7 @@ const ToolWindow: React.FC = () => {
     const [hoveredRow, setHoveredRow] = useState<number>(-1);
     const [uniqueId, setUniqueId] = useState<number>(initData.length);
 
-    const containerHeight = isOpen ? '350px' : '0px';
+    const containerHeight = isOpen ? '100%' : '100%';
     const overlap = isOpen ? 2 : 0;
 
     const handleMouseEnter = (index: number) => {
@@ -110,89 +167,53 @@ const ToolWindow: React.FC = () => {
 
     return (
         <Container>
+            <ToolScrollTable>
+                <ToolContainerHeader>
+                </ToolContainerHeader>
+                <ToolContainerBody>
+                    {data.map((row, index) => (
+                        <DraggableItem
+                            data={row}
+                            key={row.id}
+                            onMouseEnter={() => handleMouseEnter(row.id)}
+                            onMouseLeave={handleMouseLeave}
+                            id={`${row.id}`}
+                        >
+                            <IconButton
+                                sx={{ visibility: hoveredRow === row.id ? '' : 'hidden' }}
+                                onClick={() => deleteClick(row.id)}
+                                color="primary"
+                                aria-label="open-close"
+                            >
+                                <ClearIcon sx={{ fontSize: '20px', color: "red" }} />
+                            </IconButton>
+                            <FlatwareIcon style={{ fontSize: '25px' }} />
+                            {/* <CheckroomIcon style={{ fontSize: '20px' }} />
+                                <SoapIcon style={{ fontSize: '20px' }} />
+                                <HandymanIcon style={{ fontSize: '20px' }} /> */}
+                            <ToolTextContainer>
+                                <ToolName>
+                                    {row.name}
+                                </ToolName>
+                                <ToolWeight>
+                                    {row.weight} g
+                                </ToolWeight>
+                            </ToolTextContainer>
+                            {/* NOTE there is an extra table cell being defined in the draggable table row to indicate draggable */}
+                        </DraggableItem>
+                    ))}
+                </ToolContainerBody>
+            </ToolScrollTable>
             <ButtonContainer>
                 <IconButton onClick={addClick} color="primary" aria-label="add-gear">
                     <AddIcon sx={{ fontSize: 40 }} />
                 </IconButton>
-                <IconButton onClick={closeClick} color="primary" aria-label="open-close">
-                    <UnfoldMoreIcon sx={{ fontSize: 40 }} />
-                </IconButton>
             </ButtonContainer>
-            <TableContainer component={Paper} sx={{ height: containerHeight, zIndex: overlap }}>
-                <Table
-                // stickyHeader
-                >
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>
-                                {/* this has to be empty for the drag indicator*/}
-                            </TableCell>
-                            <TableCell>Tool</TableCell>
-                            <TableCell>Category</TableCell>
-                            <TableCell>Weight</TableCell>
-                            <TableCell>
-                                {/* this has to be empty for the delete icon*/}
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.map((row, index) => (
-                            <DraggableTableRow
-                                data={row}
-                                key={row.id}
-                                onMouseEnter={() => handleMouseEnter(row.id)}
-                                onMouseLeave={handleMouseLeave}
-                                id={`${row.id}`}
-                            >
-                                {/* NOTE there is an extra table cell being defined in the draggable table row to indicate draggable */}
-                                <TableCell>
-                                    <TextField
-                                        hiddenLabel
-                                        id="filled-hidden-label-small"
-                                        defaultValue={row.name}
-                                        variant="filled"
-                                        size="small"
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <FlatwareIcon />
-                                    <CheckroomIcon />
-                                    <SoapIcon />
-                                    <HandymanIcon />
-                                </TableCell>
-                                <TableCell>
-                                    <TextField
-                                        hiddenLabel
-                                        id="filled-hidden-label-small"
-                                        defaultValue={row.weight}
-                                        variant="filled"
-                                        size="small"
-                                        sx={{ width: 100 }}
-                                    />
-                                </TableCell>
-                                <TableCell sx={{ width: '100px' }}>
-                                    {
-                                        hoveredRow === row.id &&
-                                        <IconButton onClick={() => deleteClick(row.id)} color="primary" aria-label="open-close">
-                                            <ClearIcon sx={{ fontSize: 20, color: "red" }} />
-                                        </IconButton>
-                                    }
-                                </TableCell>
-                            </DraggableTableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            {/* <DragOverlay>
-                {activeId ? (
-                    <DraggableTableRow id={`Item ${activeId}`} />
-                ) : null}
-            </DragOverlay> */}
         </Container>
     );
 };
 
-interface DraggableTableRowProps {
+interface DraggableItemProps {
     data: Data;
     children?: React.ReactNode;
     id: string;
@@ -200,7 +221,7 @@ interface DraggableTableRowProps {
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
 }
 
-const DraggableTableRow: React.FC<DraggableTableRowProps> = ({ data, children, id, onMouseEnter, onMouseLeave }) => {
+const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave }) => {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id,
         data: data
@@ -211,29 +232,34 @@ const DraggableTableRow: React.FC<DraggableTableRowProps> = ({ data, children, i
         // zIndex: isDragging ? 1000 : 'auto',
         // transition: isDragging ? 'transform 0.05s ease, box-shadow 0.05s ease' : 'none',
         // boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.2)' : 'none',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
         backgroundColor: isDragging ? 'rgba(138, 138, 138, 0.2)' : '',
         color: isDragging ? 'rgba(255, 255, 255, 0.2)' : '',
+        height: '40px',
+        width: '100%',
+        maxWidth: '100%',
     };
 
     const defaultStyle = {
-        borderRadius: '50px',
+        borderRadius: '15px',
         padding: 5,
-        fontSize: 40,
+        fontSize: 30,
+        marginLeft: 'auto',
     }
 
     return (
-        <TableRow ref={setNodeRef} style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-            <TableCell>
-                <DragIndicatorIcon
-                    style={defaultStyle}
-                    {...attributes}
-                    {...listeners}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
-                />
-            </TableCell>
+        <div ref={setNodeRef} style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             {children}
-        </TableRow>
+            <DragIndicatorIcon
+                style={defaultStyle}
+                {...attributes}
+                {...listeners}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+            />
+        </div>
     );
 };
 

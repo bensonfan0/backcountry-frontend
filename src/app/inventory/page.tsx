@@ -6,24 +6,33 @@ import ToolWindow from '@/components/tool/toolWindow';
 import styled from 'styled-components';
 
 const ToolContainer = styled.div`
-    width: 100%;
+    width: 25%;
     margin-top: auto;
+    /* flex: 1; */
+    flex-grow: 0;
+`
+
+const PackContainer = styled.div`
+    width: 75%;
+    /* flex: 4; */
 `
 
 const Page = styled.div`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     min-height: 100%;
-    padding: 40px 0 0 0;
+    /* padding: 40px 0 0 0; */
 `
 
 function Inventory() {
     return (
         <Page>
-            <ContainerCard id={1} title={"Backpack"} content={"weight"} />
             <ToolContainer>
                 <ToolWindow />
             </ToolContainer>
+            <PackContainer>
+                <ContainerCard id={1} title={"Backpack"} content={"weight"} />
+            </PackContainer>
         </Page>
     )
 }

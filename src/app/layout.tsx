@@ -9,12 +9,18 @@ import Breadcrumb from '@/components/breadcrumb/breadcrumb';
 import styled from 'styled-components';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { Data } from '@/components/tool/toolWindow';
+import Header from '@/components/header/header';
 
 const inter = Inter({ subsets: ['latin'] })
 
 const Content = styled.div`
   width: 100%;
 `;
+
+const PageWithHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+`
 
 const Page = styled.div`
   height: 100%;
@@ -23,10 +29,10 @@ const Page = styled.div`
 `
 
 const Item = styled.div`
-  width: 200px;
-  height: 100px;
+  width: 250px;
+  height: 40px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  background-color: #cecece;
+  background-color: #ffffff;
 `
 
 interface DroppedDataContextType {
@@ -70,20 +76,22 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ height: '100%' }} suppressHydrationWarning>
       <body className={inter.className} style={{ height: '100%', margin: 0 }}>
-        <Page>
-          <Sidebar />
-          <DroppedDataContext.Provider value={{data, droppableId, droppedCount}}>
-          <DndContext
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <Content>{children}</Content>
-            <DragOverlay>
-              {activeId > -1 && <Item>{data?.name} {data?.category} {data?.weight}</Item>}
-            </DragOverlay>
-          </DndContext>
-          </DroppedDataContext.Provider>
-        </Page>
+        <PageWithHeader>
+          <Header />
+          <Page>
+            <DroppedDataContext.Provider value={{ data, droppableId, droppedCount }}>
+              <DndContext
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <Content>{children}</Content>
+                <DragOverlay>
+                  {activeId > -1 && <Item>{data?.name} {data?.category} {data?.weight}</Item>}
+                </DragOverlay>
+              </DndContext>
+            </DroppedDataContext.Provider>
+          </Page>
+        </PageWithHeader>
       </body>
     </html>
   )
