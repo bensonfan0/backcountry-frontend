@@ -6,12 +6,12 @@ import styled from 'styled-components';
 
 const ToolContainer = styled.div`
     width: 25%;
-    margin-top: auto;
-    flex-grow: 0;
+    /* margin-top: auto; */
+    /* flex-grow: 0; */
 `
 
 const PackContainer = styled.div`
-    width: 75%;
+    width: 25%;
 `
 
 const Page = styled.div`

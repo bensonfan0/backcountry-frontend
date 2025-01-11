@@ -76,7 +76,7 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
     }, [tools])
 
     const hoverOverStyle: React.CSSProperties = {
-        backgroundColor: isOver ? '#e1ffca' : undefined,
+        backgroundColor: isOver ? '#e1ffca' : '#fff',
     }
 
     const deleteClickTools = (id: string) => {

@@ -10,7 +10,7 @@ import { Category } from '@/data/constants';
 const Container = styled.div`
     display: flex;
     align-items: flex-start;
-    width: 350px;
+    width: 400px;
 `
 
 const ToolScrollTable = styled.div`

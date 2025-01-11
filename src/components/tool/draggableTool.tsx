@@ -11,7 +11,19 @@ import FlatwareIcon from '@mui/icons-material/Flatware';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import SoapIcon from '@mui/icons-material/Soap';
 import HandymanIcon from '@mui/icons-material/Handyman';
-import { Category } from '@/data/constants';
+import {
+    IconShirt,
+    IconBaguette,
+    IconMeat,
+    IconSock,
+    IconTent,
+} from '@tabler/icons-react';
+import {
+    Boot,
+    Pants,
+    Sock,
+} from '@phosphor-icons/react';
+import { Category, categoryToIconMappings } from '@/data/constants';
 
 
 const ToolName = styled.div`
@@ -57,20 +69,6 @@ interface DraggableComponentProps {
     deleteClick: (id: string) => void;
     setTools?: React.Dispatch<React.SetStateAction<Data[]>>;
 }
-
-const categoryToIconMappings = {
-    [Category.FOOD]: { icon: <FlatwareIcon />, label: Category.FOOD },
-    [Category.CLOTHING]: { icon: <CheckroomIcon />, label: Category.CLOTHING },
-    [Category.HYGIENE]: { icon: <SoapIcon />, label: Category.HYGIENE },
-    [Category.GEAR]: { icon: <HandymanIcon />, label: Category.GEAR }
-};
-
-const iconList = [
-    { icon: <FlatwareIcon />, label: Category.FOOD },
-    { icon: <CheckroomIcon />, label: Category.CLOTHING },
-    { icon: <SoapIcon />, label: Category.HYGIENE },
-    { icon: <HandymanIcon />, label: Category.GEAR }
-];
 
 const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools }: DraggableComponentProps) => {
     const [id, _] = useState<string>(_data.id);
@@ -143,8 +141,8 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
         category: Category,
     ) => {
         setSelectedIcon(categoryToIconMappings[category].icon)
-        setData((prevData)  => {
-            let newData = {...prevData}
+        setData((prevData) => {
+            let newData = { ...prevData }
             newData.category = category
             return newData
         })
@@ -181,7 +179,7 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
                     role: 'listbox',
                 }}
             >
-                {Object.entries(categoryToIconMappings).map(([_, value], index) => (
+                {Object.entries(categoryToIconMappings).map(([_, value]) => (
                     <MenuItem
                         key={value.label}
                         onClick={(event) => handleMenuItemClick(event, value.label)}
@@ -246,28 +244,28 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         color: isDragging ? 'rgba(28, 149, 255, 0.806)' : '',
         height: '40px',
         width: '100%',
-        maxWidth: '100%',
+        // maxWidth: '100%',
         backgroundColor: '#fff',
     };
 
-    const defaultStyle = {
-        borderRadius: '15px',
-        padding: '5px',
-        fontSize: 30,
-        marginLeft: 'auto',
-        zIndex: 3,
-    }
-
     return (
-        <div ref={setNodeRef} style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+        <div
+            style={style}
+            ref={setNodeRef}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            >
             {children}
-            <DragIndicatorIcon
-                style={defaultStyle}
+            <IconButton
+                // ref={setNodeRef}
                 {...attributes}
                 {...listeners}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
-            />
+            >
+                <DragIndicatorIcon
+                />
+            </IconButton>
         </div>
     );
 };

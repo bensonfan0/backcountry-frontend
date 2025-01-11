@@ -6,19 +6,19 @@ export const TEST_DATA = [
     {
         id: '0',
         name: `Tent`,
-        category: Category.GEAR,
+        category: Category.TENT,
         weight: 2200
     },
     {
         id: '1',
         name: `Stove`,
-        category: Category.GEAR,
+        category: Category.COOKWARE,
         weight: 300
     },
     {
         id: '2',
         name: `Pot`,
-        category: Category.GEAR,
+        category: Category.COOKWARE,
         weight: 300
     },
     {
@@ -30,7 +30,7 @@ export const TEST_DATA = [
     {
         id: '4',
         name: `Ham`,
-        category: Category.FOOD,
+        category: Category.MEAT,
         weight: 100
     },
     {
@@ -60,43 +60,43 @@ export const TEST_DATA = [
     {
         id: '9',
         name: `Hand Sanitizer`,
-        category: Category.HYGIENE,
+        category: Category.FIRSTAID,
         weight: 55
     },
     {
         id: '10',
         name: `Wind Breaker`,
-        category: Category.CLOTHING,
+        category: Category.JACKET,
         weight: 340
     },
     {
         id: '11',
         name: `Socks`,
-        category: Category.CLOTHING,
+        category: Category.SOCK,
         weight: 100
     },
     {
         id: '12',
         name: `Leggings`,
-        category: Category.CLOTHING,
+        category: Category.PANTS,
         weight: 150
     },
     {
         id: '13',
         name: `Tshirt`,
-        category: Category.CLOTHING,
+        category: Category.SHIRT,
         weight: 100
     },
     {
         id: '14',
         name: `Hoodie`,
-        category: Category.CLOTHING,
+        category: Category.JACKET,
         weight: 550
     },
     {
         id: '15',
         name: `Bear Mace`,
-        category: Category.GEAR,
+        category: Category.DEFENCE,
         weight: 300
     },
 ]
