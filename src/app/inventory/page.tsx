@@ -1,29 +1,34 @@
 "use client";
 
-import Grid from '@mui/material/Grid2';
-import ContainerCard from '@/components/container/containerCard';
+import ContainerWindow from '@/components/container/containerWindow';
 import ToolWindow from '@/components/tool/toolWindow';
 import styled from 'styled-components';
 
 const ToolContainer = styled.div`
-    width: 100%;
-    margin-top: auto;
+    width: 25%;
+    /* margin-top: auto; */
+    /* flex-grow: 0; */
+`
+
+const PackContainer = styled.div`
+    width: 25%;
 `
 
 const Page = styled.div`
     display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    padding: 40px 0 0 0;
+    flex-direction: row;
+    height: calc(100vh - 40px);
 `
 
 function Inventory() {
     return (
         <Page>
-            <ContainerCard id={1} title={"Backpack"} content={"weight"} />
             <ToolContainer>
                 <ToolWindow />
             </ToolContainer>
+            <PackContainer>
+                <ContainerWindow />
+            </PackContainer>
         </Page>
     )
 }
