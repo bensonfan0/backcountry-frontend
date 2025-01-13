@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import styled from 'styled-components';
 import DraggableTool from '../tool/draggableTool';
 import { Data } from '../tool/toolWindow';
-import { DroppedDataContext } from '@/app/layout';
+import { DroppedDataContext } from '@/app/inventory/page';
 import IconButton from '@mui/material/IconButton';
 import ClearIcon from '@mui/icons-material/Clear';
 

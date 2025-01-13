@@ -4,7 +4,8 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DraggableTool from './draggableTool';
 import { TEST_DATA } from '@/data/testData';
-import { Category } from '@/data/constants';
+import { Category, TOOL_WINDOW_ID } from '@/data/constants';
+import { SortableContext } from '@dnd-kit/sortable';
 
 
 const Container = styled.div`
@@ -85,9 +86,11 @@ const ToolWindow: React.FC = () => {
                     {/* planning to be a search bar */}
                 </ToolContainerHeader>
                 <ToolContainerBody>
-                    {data.map((row) => (
-                        <DraggableTool key={row.id} _data={row} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClick} />
-                    ))}
+                    <SortableContext id={TOOL_WINDOW_ID} items={data}>
+                        {data.map((row) => (
+                            <DraggableTool key={row.id} _data={row} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClick} setTools={setData} />
+                        ))}
+                    </SortableContext>
                 </ToolContainerBody>
             </ToolScrollTable>
             <ButtonContainer>

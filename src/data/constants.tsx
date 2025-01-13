@@ -71,3 +71,5 @@ export const categoryToIconMappings = {
     [Category.TOILETPAPER]: { icon: <ToiletPaper size={25} />, label: Category.TOILETPAPER },
     [Category.FIRSTAID]: { icon: <FirstAid size={25} />, label: Category.FIRSTAID },
 };
+
+export const TOOL_WINDOW_ID = 'toolId'

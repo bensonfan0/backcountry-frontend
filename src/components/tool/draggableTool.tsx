@@ -7,23 +7,9 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { useDraggable } from '@dnd-kit/core';
 import { Menu, MenuItem } from '@mui/material';
 
-import FlatwareIcon from '@mui/icons-material/Flatware';
-import CheckroomIcon from '@mui/icons-material/Checkroom';
-import SoapIcon from '@mui/icons-material/Soap';
-import HandymanIcon from '@mui/icons-material/Handyman';
-import {
-    IconShirt,
-    IconBaguette,
-    IconMeat,
-    IconSock,
-    IconTent,
-} from '@tabler/icons-react';
-import {
-    Boot,
-    Pants,
-    Sock,
-} from '@phosphor-icons/react';
 import { Category, categoryToIconMappings } from '@/data/constants';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 
 const ToolName = styled.div`
@@ -159,7 +145,8 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
             key={data.id}
             onMouseEnter={() => handleMouseEnter(data.id)}
             onMouseLeave={handleMouseLeave}
-            id={`${data.name} ${data.id}`}
+            id={data.id}
+            setTools={setTools}
         >
             <IconButton
                 sx={{ visibility: hoveredRow === data.id ? '' : 'hidden' }}
@@ -229,12 +216,18 @@ interface DraggableItemProps {
     id: string;
     onMouseEnter?: React.MouseEventHandler<HTMLTableRowElement>;
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
+    setTools?: React.Dispatch<React.SetStateAction<Data[]>>;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave }) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, setTools }) => {
+    const dataFordndContext = { 
+        ...data,
+        setTools: setTools,
+    }
+
+    const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
         id,
-        data: data
+        data: dataFordndContext,
     });
 
     const style: React.CSSProperties = {
@@ -246,6 +239,8 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         width: '100%',
         // maxWidth: '100%',
         backgroundColor: '#fff',
+        border: '0.5px solid #6f6f6f',
+        borderRadius: '10px',
     };
 
     return (
@@ -254,10 +249,10 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
             ref={setNodeRef}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            >
+        >
             {children}
             <IconButton
-                // ref={setNodeRef}
+                ref={setActivatorNodeRef}
                 {...attributes}
                 {...listeners}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}
