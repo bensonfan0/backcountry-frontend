@@ -6,6 +6,7 @@ import { Data } from '../tool/toolWindow';
 import { DroppedDataContext } from '@/app/inventory/page';
 import IconButton from '@mui/material/IconButton';
 import ClearIcon from '@mui/icons-material/Clear';
+import { SortableContext } from '@dnd-kit/sortable';
 
 
 const ContainerCardContainer = styled.div`
@@ -120,11 +121,13 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
                     </IconButton>
                 </ContainerTitleContainer>
                 <ContainerTools>
-                    {tools.map((tool) => {
-                        return (
-                            <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} setTools={setTools} />
-                        )
-                    })}
+                    <SortableContext items={tools}>
+                        {tools.map((tool) => {
+                            return (
+                                <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} setTools={setTools} />
+                            )
+                        })}
+                    </SortableContext>
                 </ContainerTools>
             </ContainerCardContent>
         </ContainerCardContainer>

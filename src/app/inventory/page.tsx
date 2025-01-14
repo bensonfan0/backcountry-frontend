@@ -5,7 +5,7 @@ import DraggableTool from '@/components/tool/draggableTool';
 import ToolWindow, { Data } from '@/components/tool/toolWindow';
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { createContext, useState } from 'react';
+import { createContext, useState, useReducer, useContext } from 'react';
 import styled from 'styled-components';
 
 const ToolContainer = styled.div`
@@ -31,14 +31,57 @@ interface DroppedDataContextType {
     droppedCount: number; // this can't be the right way to track when something is dropped
 }
 
+// TODO: use context and reducer to pass all the containers and tools inside
+enum InventoryActions {
+    ADD,
+    REMOVE,
+    SPLICE
+}
+
+interface CurrentInventoryAction {
+    type: InventoryActions,
+    payload: any
+}
+
+type CurrentInventory = { [key: string]: Data[] }
+
+function currentInventoryReducer(state: CurrentInventory, action: CurrentInventoryAction): CurrentInventory {
+    switch (action.type) {
+        case InventoryActions.ADD:
+            return {};
+        case InventoryActions.REMOVE:
+            return {};
+        case InventoryActions.SPLICE:
+            return {};
+        default:
+            throw new Error('Current Inventory Unhandled action type');
+    }
+}
+interface CurrentInventoryContextType {
+    currentInventory: CurrentInventory;
+    currentInventoryDispatcher: React.Dispatch<CurrentInventoryAction>;
+}
+
 export const DroppedDataContext = createContext<DroppedDataContextType | undefined>(undefined);
 
-function Inventory() {
+export const CurrentInventoryContext = createContext<CurrentInventoryContextType | undefined>(undefined);
 
+export const useCurrentInventoryState = () => {
+    const context = useContext(CurrentInventoryContext);
+    if (context === undefined) {
+        throw new Error('useCurrentInventoryState must be used within a CountProvider');
+    }
+    return context;
+};
+
+
+
+function Inventory() {
     const [activeId, setActiveId] = useState<string>('')
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
     const [data, setData] = useState<Data | undefined>(undefined)
+    const [currentInventory, currentInventoryDispatcher] = useReducer(currentInventoryReducer, {});
 
     function createData(eventData: any) {
         const data: Data = {
@@ -102,24 +145,26 @@ function Inventory() {
 
     return (
         <Page>
-            <DroppedDataContext.Provider value={{ data, droppableId, droppedCount }}>
-                <DndContext
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={handleDragOver}
-                >
-                    <ToolContainer>
-                        <ToolWindow />
-                    </ToolContainer>
-                    <PackContainer>
-                        <ContainerWindow />
-                    </PackContainer>
+            <CurrentInventoryContext.Provider value={{ currentInventory, currentInventoryDispatcher }}>
+                <DroppedDataContext.Provider value={{ data, droppableId, droppedCount }}>
+                    <DndContext
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                    >
+                        <ToolContainer>
+                            <ToolWindow />
+                        </ToolContainer>
+                        <PackContainer>
+                            <ContainerWindow />
+                        </PackContainer>
 
-                    <DragOverlay>
-                        {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} />}
-                    </DragOverlay>
-                </DndContext>
-            </DroppedDataContext.Provider>
+                        <DragOverlay>
+                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} />}
+                        </DragOverlay>
+                    </DndContext>
+                </DroppedDataContext.Provider>
+            </CurrentInventoryContext.Provider>
         </Page>
     )
 }

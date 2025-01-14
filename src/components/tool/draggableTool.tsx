@@ -225,7 +225,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         setTools: setTools,
     }
 
-    const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
+    const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef, transition } = useSortable({
         id,
         data: dataFordndContext,
     });
@@ -241,6 +241,8 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         backgroundColor: '#fff',
         border: '0.5px solid #6f6f6f',
         borderRadius: '10px',
+        transform: CSS.Transform.toString(transform), // these don't seem to do anything
+        transition,
     };
 
     return (

@@ -99,4 +99,10 @@ export const TEST_DATA = [
         category: Category.DEFENCE,
         weight: 300
     },
+    {
+        id: '16',
+        name: `Some absurdly long sentence to test out certain edge cases in the tool and backpack windows`,
+        category: Category.TOILETPAPER,
+        weight: 1
+    },
 ]
