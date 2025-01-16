@@ -67,6 +67,7 @@ export function createData(eventData: any) {
 function Inventory() {
     const [activeId, setActiveId] = useState<string>('')
     const [uniqueId, setUniqueId] = useState<number>(1000000); // definitely not bulletproof
+    const [hoverContainerId, setHoverContainerId] = useState<string>('')
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
     const [data, setData] = useState<Data>({id: "none", category: Category.ACCESSORIES, weight: 0, name: ''})
@@ -82,11 +83,11 @@ function Inventory() {
         }
         if (data === undefined) return
         setData(data);
+        setHoverContainerId(containerId)
         setActiveId(String(event.active.id))
     }
 
     function handleDragEnd(event: DragEndEvent) {
-        console.log('HUHHHHHHH ENDDINGGG')
         const data: Data | undefined = createData(event.active.data.current);
         if (!data || event.over === undefined || event.over === null) return
         if (event.over.data.current?.containerId === TOOL_WINDOW_ID) {
@@ -107,6 +108,7 @@ function Inventory() {
         })
         setActiveId('')
         setUniqueId(uniqueId + 1)
+        setHoverContainerId('')
     }
 
     function handleDragOver(event: DragOverEvent) {
@@ -162,7 +164,7 @@ function Inventory() {
                         </PackContainer>
 
                         <DragOverlay>
-                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} containerId={'current_hover'} />}
+                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} containerId={hoverContainerId} />}
                         </DragOverlay>
                     </DndContext>
                 </DroppedDataContext.Provider>

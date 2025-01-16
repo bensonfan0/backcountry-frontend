@@ -9,6 +9,8 @@ import { Menu, MenuItem } from '@mui/material';
 import { Category, categoryToIconMappings, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useCurrentInventoryState } from '@/app/inventory/page';
+import { InventoryActions } from '@/app/inventory/inventoryReducer';
 
 const ToolName = styled.div`
     font-size: 13px;
@@ -62,6 +64,8 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryToIconMappings[_data.category].icon);
 
+    const currentInventoryContext = useCurrentInventoryState();
+
     const open = Boolean(anchorEl);
 
     const handleDoubleClickName = () => {
@@ -81,15 +85,31 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
     }
 
     const handleChangeName = (e: ChangeEvent<HTMLInputElement>) => {
-        let newData = { ...data }
-        newData.name = e.target.value
-        setData(newData)
+        let newTool = { ...data }
+        newTool.name = e.target.value
+        setData(newTool)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
+        })
     };
 
     const handleChangeWeight = (e: ChangeEvent<HTMLInputElement>) => {
-        let newData = { ...data }
-        newData.weight = Number(e.target.value)
-        setData(newData) // this could be a race condition as we wait for the data to change...
+        let newTool = { ...data }
+        newTool.weight = Number(e.target.value)
+        setData(newTool) // this could be a race condition as we wait for the data to change...
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
+        })
     };
 
     const handleMouseEnter = (id: string) => {
@@ -109,10 +129,16 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
         category: Category,
     ) => {
         setSelectedIcon(categoryToIconMappings[category].icon)
-        setData((prevData) => {
-            let newData = { ...prevData }
-            newData.category = category
-            return newData
+        let newTool = { ...data }
+        newTool.category = category
+        setData(newTool)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
         })
         setAnchorEl(null);
     };

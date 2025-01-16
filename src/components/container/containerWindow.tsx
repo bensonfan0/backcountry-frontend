@@ -18,16 +18,13 @@ const ContainerDiv = styled.div`
 `
 
 const ContainerWindow = ({ }: CardProps) => {
-    const [containers, setContainers] = useState<string[]>([]);
     const [hoveredContainer, setHoveredContainer] = useState<string>('');
     const [uniqueId, setUniqueId] = useState<number>(0);
 
     const currentInventoryContext = useCurrentInventoryState();
 
     const addBackpack = () => {
-        // let newContainers = [...containers, `backpack ${uniqueId}`]
         setUniqueId(uniqueId + 1)
-        // setContainers(newContainers)
         currentInventoryContext.currentInventoryDispatcher({
             type: InventoryActions.ADD_CONTAINER,
             payload: {
