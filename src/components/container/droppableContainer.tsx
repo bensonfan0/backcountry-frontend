@@ -2,10 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import styled from 'styled-components';
 import DraggableTool from '../tool/draggableTool';
-import { Data } from '../tool/toolWindow';
-import { DroppedDataContext } from '@/app/layout';
+import { DroppedDataContext, useCurrentInventoryState } from '@/app/inventory/page';
 import IconButton from '@mui/material/IconButton';
 import ClearIcon from '@mui/icons-material/Clear';
+import { SortableContext } from '@dnd-kit/sortable';
+import { InventoryActions } from '@/app/inventory/inventoryReducer';
 
 
 const ContainerCardContainer = styled.div`
@@ -50,43 +51,39 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
     const { isOver, setNodeRef } = useDroppable({
         id: id,
     });
-    const [tools, setTools] = useState<Data[]>([]);
     const [hoveredRow, setHoveredRow] = useState<string>('');
-    const [uniqueId, setUniqueId] = useState<number>(1000000); // definitely not bulletproof
     const [weight, setWeight] = useState<number>(0);
-
-    const droppedData = useContext(DroppedDataContext)
+    const currentInventoryContext = useCurrentInventoryState();
 
     useEffect(() => {
-        if (droppedData?.data && droppedData.droppableId === id) { // is this still going to register as true when the context changes?
-            let droppedDataCopy = { ...droppedData.data }
-            droppedDataCopy.id = `${id}-${String(uniqueId)}`
-            let newTools = [...tools, droppedDataCopy]
-            setTools(newTools)
-            setUniqueId(uniqueId + 1)
-        }
-    }, [droppedData?.droppedCount])
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.ADD_CONTAINER,
+            payload: {
+                containerId: id
+            }
+        })
+    }, [])
 
     useEffect(() => {
         let newWeight = 0
-        tools.forEach((tool) => {
+        currentInventoryContext.currentInventory[id].forEach((tool) => {
             newWeight += tool.weight
         })
         setWeight(newWeight)
-    }, [tools])
+    }, [currentInventoryContext.currentInventory]) // this is very important to render when it changes
 
     const hoverOverStyle: React.CSSProperties = {
         backgroundColor: isOver ? '#e1ffca' : '#fff',
     }
 
-    const deleteClickTools = (id: string) => {
-        const newTools: Data[] = [];
-        tools.forEach((row) => {
-            if (row.id !== id) {
-                newTools.push(row)
+    const deleteClickTools = (toolId: string) => {
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REMOVE,
+            payload: {
+                containerId: id,
+                toolId: toolId
             }
         })
-        setTools(newTools);
     }
 
     const handleMouseEnter = (id: string) => {
@@ -120,11 +117,13 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
                     </IconButton>
                 </ContainerTitleContainer>
                 <ContainerTools>
-                    {tools.map((tool) => {
-                        return (
-                            <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} setTools={setTools} />
-                        )
-                    })}
+                        <SortableContext items={id in currentInventoryContext.currentInventory ? currentInventoryContext.currentInventory[id] : []}>
+                            {id in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[id].map((tool) => {
+                                return (
+                                    <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} containerId={id} />
+                                )
+                            })}
+                        </SortableContext>
                 </ContainerTools>
             </ContainerCardContent>
         </ContainerCardContainer>

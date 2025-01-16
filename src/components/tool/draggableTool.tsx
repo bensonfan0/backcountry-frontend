@@ -4,27 +4,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import styled from 'styled-components';
 import { Data } from './toolWindow';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { useDraggable } from '@dnd-kit/core';
 import { Menu, MenuItem } from '@mui/material';
 
-import FlatwareIcon from '@mui/icons-material/Flatware';
-import CheckroomIcon from '@mui/icons-material/Checkroom';
-import SoapIcon from '@mui/icons-material/Soap';
-import HandymanIcon from '@mui/icons-material/Handyman';
-import {
-    IconShirt,
-    IconBaguette,
-    IconMeat,
-    IconSock,
-    IconTent,
-} from '@tabler/icons-react';
-import {
-    Boot,
-    Pants,
-    Sock,
-} from '@phosphor-icons/react';
-import { Category, categoryToIconMappings } from '@/data/constants';
-
+import { Category, categoryToIconMappings, TOOL_WINDOW_ID } from '@/data/constants';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useCurrentInventoryState } from '@/app/inventory/page';
+import { InventoryActions } from '@/app/inventory/inventoryReducer';
 
 const ToolName = styled.div`
     font-size: 13px;
@@ -64,19 +50,21 @@ const StyledInput = styled.input`
 
 interface DraggableComponentProps {
     _data: Data;
-    hoveredRow: string
+    hoveredRow: string;
+    containerId: string;
     setHoveredRow: (id: string) => void;
     deleteClick: (id: string) => void;
-    setTools?: React.Dispatch<React.SetStateAction<Data[]>>;
 }
 
-const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools }: DraggableComponentProps) => {
+const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containerId }: DraggableComponentProps) => {
     const [id, _] = useState<string>(_data.id);
     const [data, setData] = useState<Data>(_data);
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
     const [isEditingWeight, setIsEditingWeight] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryToIconMappings[_data.category].icon);
+
+    const currentInventoryContext = useCurrentInventoryState();
 
     const open = Boolean(anchorEl);
 
@@ -97,32 +85,32 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
     }
 
     const handleChangeName = (e: ChangeEvent<HTMLInputElement>) => {
-        let newData = { ...data }
-        newData.name = e.target.value
-        handleChange(newData)
-        setData(newData)
+        let newTool = { ...data }
+        newTool.name = e.target.value
+        setData(newTool)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
+        })
     };
 
     const handleChangeWeight = (e: ChangeEvent<HTMLInputElement>) => {
-        let newData = { ...data }
-        newData.weight = Number(e.target.value)
-        handleChange(newData)
-        setData(newData) // this could be a race condition as we wait for the data to change...
-    };
-
-    const handleChange = (newData: Data) => {
-        if (!setTools) return;
-        setTools((prevTools: Data[]) => {
-            let newTools: Data[] = []
-            prevTools.forEach((tool) => {
-                if (id === tool.id) {
-                    tool = newData
-                }
-                newTools.push(tool)
-            })
-            return newTools
+        let newTool = { ...data }
+        newTool.weight = Number(e.target.value)
+        setData(newTool) // this could be a race condition as we wait for the data to change...
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
         })
-    }
+    };
 
     const handleMouseEnter = (id: string) => {
         setHoveredRow(id);
@@ -141,10 +129,16 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
         category: Category,
     ) => {
         setSelectedIcon(categoryToIconMappings[category].icon)
-        setData((prevData) => {
-            let newData = { ...prevData }
-            newData.category = category
-            return newData
+        let newTool = { ...data }
+        newTool.category = category
+        setData(newTool)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REPLACE_TOOL,
+            payload: {
+                containerId: containerId,
+                toolId: id,
+                newTool: newTool
+            }
         })
         setAnchorEl(null);
     };
@@ -159,7 +153,8 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
             key={data.id}
             onMouseEnter={() => handleMouseEnter(data.id)}
             onMouseLeave={handleMouseLeave}
-            id={`${data.name} ${data.id}`}
+            id={data.id}
+            containerId={containerId}
         >
             <IconButton
                 sx={{ visibility: hoveredRow === data.id ? '' : 'hidden' }}
@@ -227,26 +222,47 @@ interface DraggableItemProps {
     data: Data;
     children?: React.ReactNode;
     id: string;
+    containerId: string;
     onMouseEnter?: React.MouseEventHandler<HTMLTableRowElement>;
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave }) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId }) => {
+
+    let dataFordndContext = {
+        ...data,
+        containerId: containerId,
+    }
+
+    const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef, transition } = useSortable({
         id,
-        data: data
+        data: dataFordndContext,
     });
 
-    const style: React.CSSProperties = {
+    let style: React.CSSProperties = {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         color: isDragging ? 'rgba(28, 149, 255, 0.806)' : '',
         height: '40px',
         width: '100%',
-        // maxWidth: '100%',
         backgroundColor: '#fff',
+        border: isDragging ? '1px solid rgba(28, 149, 255, 0.806)' : '0.5px solid #6f6f6f',
+        borderRadius: '10px',
     };
+
+    const styleSortable: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    if (containerId !== TOOL_WINDOW_ID) {
+        // we don't want the sorting animation on tool window
+        style = {
+            ...style,
+            ...styleSortable
+        }
+    }
 
     return (
         <div
@@ -254,10 +270,10 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
             ref={setNodeRef}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            >
+        >
             {children}
             <IconButton
-                // ref={setNodeRef}
+                ref={setActivatorNodeRef}
                 {...attributes}
                 {...listeners}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}

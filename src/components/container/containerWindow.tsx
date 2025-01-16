@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import BackpackTwoToneIcon from '@mui/icons-material/BackpackTwoTone';
 import IconButton from '@mui/material/IconButton';
 import DroppableContainer from './droppableContainer';
+import { useCurrentInventoryState } from '@/app/inventory/page';
+import { TOOL_WINDOW_ID } from '@/data/constants';
+import { InventoryActions } from '@/app/inventory/inventoryReducer';
 
 interface CardProps {
 }
@@ -15,24 +18,28 @@ const ContainerDiv = styled.div`
 `
 
 const ContainerWindow = ({ }: CardProps) => {
-    const [containers, setContainers] = useState<string[]>([]);
     const [hoveredContainer, setHoveredContainer] = useState<string>('');
     const [uniqueId, setUniqueId] = useState<number>(0);
 
+    const currentInventoryContext = useCurrentInventoryState();
+
     const addBackpack = () => {
-        let newContainers = [...containers, `backpack ${uniqueId}`]
         setUniqueId(uniqueId + 1)
-        setContainers(newContainers)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.ADD_CONTAINER,
+            payload: {
+                containerId: `backpack ${uniqueId}`
+            }
+        })
     }
 
     const deleteClick = (id: string) => {
-        const newContainers: string[] = [];
-        containers.forEach((container) => {
-            if (container !== id) {
-                newContainers.push(container)
+        currentInventoryContext.currentInventoryDispatcher({
+            type: InventoryActions.REMOVE_CONTAINER,
+            payload: {
+                containerId: id
             }
         })
-        setContainers(newContainers);
     }
 
     return (
@@ -40,10 +47,13 @@ const ContainerWindow = ({ }: CardProps) => {
             <IconButton onClick={addBackpack} color="primary">
                 <BackpackTwoToneIcon />
             </IconButton>
-            {containers.map((value) => {
-                const id = `${value}`
-                return <DroppableContainer key={id} id={id} title={value} hoveredContainer={hoveredContainer} setHoveredContainer={setHoveredContainer} deleteClickContainer={deleteClick} />
-            })}
+            {
+                Object.keys(currentInventoryContext.currentInventory).map((value) => {
+                    if (value === TOOL_WINDOW_ID) return
+                    const id = `${value}`
+                    return <DroppableContainer key={id} id={id} title={value} hoveredContainer={hoveredContainer} setHoveredContainer={setHoveredContainer} deleteClickContainer={deleteClick} />
+                })
+            }
         </ContainerDiv>
     );
 };
