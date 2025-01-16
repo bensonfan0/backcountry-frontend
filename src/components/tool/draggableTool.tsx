@@ -4,13 +4,11 @@ import ClearIcon from '@mui/icons-material/Clear';
 import styled from 'styled-components';
 import { Data } from './toolWindow';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { useDraggable } from '@dnd-kit/core';
 import { Menu, MenuItem } from '@mui/material';
 
-import { Category, categoryToIconMappings } from '@/data/constants';
+import { Category, categoryToIconMappings, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
 
 const ToolName = styled.div`
     font-size: 13px;
@@ -50,13 +48,13 @@ const StyledInput = styled.input`
 
 interface DraggableComponentProps {
     _data: Data;
-    hoveredRow: string
+    hoveredRow: string;
+    containerId: string;
     setHoveredRow: (id: string) => void;
     deleteClick: (id: string) => void;
-    setTools?: React.Dispatch<React.SetStateAction<Data[]>>;
 }
 
-const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools }: DraggableComponentProps) => {
+const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containerId }: DraggableComponentProps) => {
     const [id, _] = useState<string>(_data.id);
     const [data, setData] = useState<Data>(_data);
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
@@ -85,30 +83,14 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
     const handleChangeName = (e: ChangeEvent<HTMLInputElement>) => {
         let newData = { ...data }
         newData.name = e.target.value
-        handleChange(newData)
         setData(newData)
     };
 
     const handleChangeWeight = (e: ChangeEvent<HTMLInputElement>) => {
         let newData = { ...data }
         newData.weight = Number(e.target.value)
-        handleChange(newData)
         setData(newData) // this could be a race condition as we wait for the data to change...
     };
-
-    const handleChange = (newData: Data) => {
-        if (!setTools) return;
-        setTools((prevTools: Data[]) => {
-            let newTools: Data[] = []
-            prevTools.forEach((tool) => {
-                if (id === tool.id) {
-                    tool = newData
-                }
-                newTools.push(tool)
-            })
-            return newTools
-        })
-    }
 
     const handleMouseEnter = (id: string) => {
         setHoveredRow(id);
@@ -146,7 +128,7 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, setTools
             onMouseEnter={() => handleMouseEnter(data.id)}
             onMouseLeave={handleMouseLeave}
             id={data.id}
-            setTools={setTools}
+            containerId={containerId}
         >
             <IconButton
                 sx={{ visibility: hoveredRow === data.id ? '' : 'hidden' }}
@@ -214,15 +196,16 @@ interface DraggableItemProps {
     data: Data;
     children?: React.ReactNode;
     id: string;
+    containerId: string;
     onMouseEnter?: React.MouseEventHandler<HTMLTableRowElement>;
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
-    setTools?: React.Dispatch<React.SetStateAction<Data[]>>;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, setTools }) => {
-    const dataFordndContext = { 
+const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId }) => {
+
+    let dataFordndContext = {
         ...data,
-        setTools: setTools,
+        containerId: containerId,
     }
 
     const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef, transition } = useSortable({
@@ -230,20 +213,30 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         data: dataFordndContext,
     });
 
-    const style: React.CSSProperties = {
+    let style: React.CSSProperties = {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         color: isDragging ? 'rgba(28, 149, 255, 0.806)' : '',
         height: '40px',
         width: '100%',
-        // maxWidth: '100%',
         backgroundColor: '#fff',
-        border: '0.5px solid #6f6f6f',
+        border: isDragging ? '1px solid rgba(28, 149, 255, 0.806)' : '0.5px solid #6f6f6f',
         borderRadius: '10px',
-        transform: CSS.Transform.toString(transform), // these don't seem to do anything
-        transition,
     };
+
+    const styleSortable: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    if (containerId !== TOOL_WINDOW_ID) {
+        // we don't want the sorting animation on tool window
+        style = {
+            ...style,
+            ...styleSortable
+        }
+    }
 
     return (
         <div

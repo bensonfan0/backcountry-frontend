@@ -3,10 +3,15 @@
 import ContainerWindow from '@/components/container/containerWindow';
 import DraggableTool from '@/components/tool/draggableTool';
 import ToolWindow, { Data } from '@/components/tool/toolWindow';
+import { Category, TOOL_WINDOW_ID } from '@/data/constants';
+import { TEST_DATA } from '@/data/testData';
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { unique } from 'next/dist/build/utils';
 import { createContext, useState, useReducer, useContext } from 'react';
 import styled from 'styled-components';
+import { CurrentInventory, CurrentInventoryAction, currentInventoryReducer, InventoryActions } from './inventoryReducer';
+import { v4 } from 'uuid';
 
 const ToolContainer = styled.div`
     width: 25%;
@@ -31,32 +36,6 @@ interface DroppedDataContextType {
     droppedCount: number; // this can't be the right way to track when something is dropped
 }
 
-// TODO: use context and reducer to pass all the containers and tools inside
-enum InventoryActions {
-    ADD,
-    REMOVE,
-    SPLICE
-}
-
-interface CurrentInventoryAction {
-    type: InventoryActions,
-    payload: any
-}
-
-type CurrentInventory = { [key: string]: Data[] }
-
-function currentInventoryReducer(state: CurrentInventory, action: CurrentInventoryAction): CurrentInventory {
-    switch (action.type) {
-        case InventoryActions.ADD:
-            return {};
-        case InventoryActions.REMOVE:
-            return {};
-        case InventoryActions.SPLICE:
-            return {};
-        default:
-            throw new Error('Current Inventory Unhandled action type');
-    }
-}
 interface CurrentInventoryContextType {
     currentInventory: CurrentInventory;
     currentInventoryDispatcher: React.Dispatch<CurrentInventoryAction>;
@@ -74,74 +53,97 @@ export const useCurrentInventoryState = () => {
     return context;
 };
 
+export function createData(eventData: any) {
+    const data: Data = {
+        name: eventData.name,
+        weight: eventData.weight,
+        category: eventData.category,
+        id: eventData.id,
+    };
+    return data;
+}
 
 
 function Inventory() {
     const [activeId, setActiveId] = useState<string>('')
+    const [uniqueId, setUniqueId] = useState<number>(1000000); // definitely not bulletproof
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
-    const [data, setData] = useState<Data | undefined>(undefined)
+    const [data, setData] = useState<Data>({id: "none", category: Category.ACCESSORIES, weight: 0, name: ''})
     const [currentInventory, currentInventoryDispatcher] = useReducer(currentInventoryReducer, {});
-
-    function createData(eventData: any) {
-        const data: Data = {
-            name: eventData.name,
-            weight: eventData.weight,
-            category: eventData.category,
-            id: eventData.id,
-        };
-        return data;
-    }
 
     function handleDragStart(event: DragStartEvent) {
         // TODO: This should be a constructor, and data should at this point be a class of its own
+        const containerId = event.active.data.current?.containerId
         const data: Data | undefined = createData(event.active.data.current);
+        if (containerId && containerId === TOOL_WINDOW_ID) { // create a new guy
+            data.id = `${data.name}-${String(uniqueId)}`
+            setUniqueId(uniqueId + 1)
+        }
         if (data === undefined) return
         setData(data);
         setActiveId(String(event.active.id))
     }
 
     function handleDragEnd(event: DragEndEvent) {
+        console.log('HUHHHHHHH ENDDINGGG')
+        const data: Data | undefined = createData(event.active.data.current);
+        if (!data || event.over === undefined || event.over === null) return
+        if (event.over.data.current?.containerId === TOOL_WINDOW_ID) {
+            return // do nothing
+        }
+        // need to check if it is over a container
+        if (!(event.over.id in currentInventory)) return
+        const newData: Data = {
+            ...data,
+            id: `${data.name}-${String(uniqueId)}` // overwrite id
+        }
+        currentInventoryDispatcher({
+            type: InventoryActions.ADD_TOOL,
+            payload: {
+                newTool: newData,
+                containerId: String(event.over.id)
+            }
+        })
         setActiveId('')
-        setDroppableId(String(event.over?.id))
-        setDroppedCount(droppedCount + 1)
-
-        swapActiveToOver(event)
+        setUniqueId(uniqueId + 1)
     }
 
     function handleDragOver(event: DragOverEvent) {
-        console.log(event)
         swapActiveToOver(event)
     }
 
     function swapActiveToOver(event: { active: any; over: any; }) {
-        // CAVEAT you only get the id's in sortable.items, NOT the element itself
-
-
-        // TODO: I have to have a data object in context that is always up to date with the most recent state of all data objects
-        // Then I can simply slice the active element inside the over container
-
-
         const { active, over } = event;
-        if (active && over && active.data.current && active.id !== over.id) {
-            const setItems: React.Dispatch<React.SetStateAction<Data[]>> = active.data.current.setTools
-            setItems((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                if (oldIndex === -1 || newIndex == -1) {
-                    // different containers
-                    const data = createData(event.active.data.current)
-                    const newArr = [
-                        ...items.slice(0, oldIndex),
-                        createData(active),
-                        ...items.slice(0, oldIndex),
-                    ]
-                    return items
+        if (active && over && active.data.current && over.data.current && active.id !== over.id) {
+            if (over.data.current.containerId === TOOL_WINDOW_ID) return // do nothing
+            currentInventoryDispatcher({
+                type: InventoryActions.SPLICE,
+                payload: {
+                    // currentData: createData(active.data.current),
+                    toolId: active.data.current.id,
+                    containerId: active.data.current.containerId,
+                    overToolId: over.data.current.id,
+                    overContainerId: over.data.current.containerId,
+                    uniqueId: uniqueId,
                 }
-                return arrayMove(items, oldIndex, newIndex);
-            });
+            })
+            currentInventoryDispatcher({
+                type: InventoryActions.REPLACE_TOOL,
+                payload: {
+                    containerId: TOOL_WINDOW_ID,
+                    toolId: active.data.current.id,
+                    newTool: {
+                        ...data,
+                        id: v4()
+                    }
+                }
+            })
+            setUniqueId(uniqueId + 1);
         }
     }
+
+    // console.log(currentInventory)
 
     return (
         <Page>
@@ -160,7 +162,7 @@ function Inventory() {
                         </PackContainer>
 
                         <DragOverlay>
-                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} />}
+                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} containerId={'current_hover'} />}
                         </DragOverlay>
                     </DndContext>
                 </DroppedDataContext.Provider>

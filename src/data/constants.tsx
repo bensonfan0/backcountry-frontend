@@ -72,4 +72,4 @@ export const categoryToIconMappings = {
     [Category.FIRSTAID]: { icon: <FirstAid size={25} />, label: Category.FIRSTAID },
 };
 
-export const TOOL_WINDOW_ID = 'toolId'
+export const TOOL_WINDOW_ID = 'window-tool'
