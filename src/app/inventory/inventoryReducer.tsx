@@ -21,8 +21,7 @@ export interface CurrentInventoryAction {
         newTools?: Data[],
         toolId?: string,
         overToolId?: string,
-        overContainerId?: string,
-        uniqueId?: number,
+        overContainerId?: string
     }
 }
 
@@ -67,8 +66,8 @@ export function currentInventoryReducer(state: CurrentInventory, action: Current
             return {
                 ...state,
                 [action.payload.containerId]: [
-                    ...state[action.payload.containerId],
-                    action.payload.newTool
+                    action.payload.newTool,
+                    ...state[action.payload.containerId]
                 ]
             };
         case InventoryActions.REMOVE:
@@ -88,8 +87,7 @@ export function currentInventoryReducer(state: CurrentInventory, action: Current
         case InventoryActions.SPLICE:
             if (action.payload.overContainerId === undefined ||
                 action.payload.toolId === undefined ||
-                action.payload.overToolId === undefined ||
-                action.payload.uniqueId === undefined
+                action.payload.overToolId === undefined
             ) {
                 console.log("Cannot remove tool as overContainerId exists");
                 return state;
@@ -118,18 +116,8 @@ export function currentInventoryReducer(state: CurrentInventory, action: Current
                     [action.payload.overContainerId]: arrayMove(overItems, activeIndex, overIndex)
                 }
             }
-
-            // return {
-            //     ...state
-            // }
-
             // // WE ARE MOVING TOOL FROM TOOL WINDOW
             if (action.payload.containerId === TOOL_WINDOW_ID) {
-                // newData = {
-                //     ...newData,
-                //     id: `${newData.name}-${String(action.payload.uniqueId)}`
-                // }
-
                 return {
                     ...state,
                     [action.payload.overContainerId]: [

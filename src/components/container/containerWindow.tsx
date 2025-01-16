@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import BackpackTwoToneIcon from '@mui/icons-material/BackpackTwoTone';
-import IconButton from '@mui/material/IconButton';
 import DroppableContainer from './droppableContainer';
 import { useCurrentInventoryState } from '@/app/inventory/page';
 import { TOOL_WINDOW_ID } from '@/data/constants';
@@ -11,27 +9,15 @@ interface CardProps {
 }
 
 const ContainerDiv = styled.div`
-    /* flex: 1; */
     overflow-y: auto;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 160px); // two bars (top and action bar)
     margin: 20px 0 0 0;
 `
 
 const ContainerWindow = ({ }: CardProps) => {
     const [hoveredContainer, setHoveredContainer] = useState<string>('');
-    const [uniqueId, setUniqueId] = useState<number>(0);
 
     const currentInventoryContext = useCurrentInventoryState();
-
-    const addBackpack = () => {
-        setUniqueId(uniqueId + 1)
-        currentInventoryContext.currentInventoryDispatcher({
-            type: InventoryActions.ADD_CONTAINER,
-            payload: {
-                containerId: `backpack ${uniqueId}`
-            }
-        })
-    }
 
     const deleteClick = (id: string) => {
         currentInventoryContext.currentInventoryDispatcher({
@@ -44,9 +30,6 @@ const ContainerWindow = ({ }: CardProps) => {
 
     return (
         <ContainerDiv>
-            <IconButton onClick={addBackpack} color="primary">
-                <BackpackTwoToneIcon />
-            </IconButton>
             {
                 Object.keys(currentInventoryContext.currentInventory).map((value) => {
                     if (value === TOOL_WINDOW_ID) return

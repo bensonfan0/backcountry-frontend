@@ -6,7 +6,7 @@ import { Data } from './toolWindow';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { Menu, MenuItem } from '@mui/material';
 
-import { Category, categoryToIconMappings, TOOL_WINDOW_ID } from '@/data/constants';
+import { Category, categoryToIconMappings, categoryToIconMappingsNew, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useCurrentInventoryState } from '@/app/inventory/page';
@@ -48,15 +48,34 @@ const StyledInput = styled.input`
     /* Add any other styles */
 `;
 
+const MenuRow = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+`
+
+const MenuRowBottomBorder = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom: 0.5px solid #676767 ;
+`
+
+const MenuCategoryDiv = styled.div`
+    padding: 0 0 0 10px;
+    width: 100px;
+`
+
 interface DraggableComponentProps {
     _data: Data;
-    hoveredRow: string;
     containerId: string;
-    setHoveredRow: (id: string) => void;
-    deleteClick: (id: string) => void;
+    hoveredRow?: string;
+    ishovering?: boolean;
+    setHoveredRow?: (id: string) => void;
+    deleteClick?: (id: string) => void;
 }
 
-const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containerId }: DraggableComponentProps) => {
+const DraggableTool = ({ _data, containerId, hoveredRow='', setHoveredRow = (id)=>{}, deleteClick = (id)=>{}, ishovering }: DraggableComponentProps) => {
     const [id, _] = useState<string>(_data.id);
     const [data, setData] = useState<Data>(_data);
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
@@ -155,6 +174,7 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
             onMouseLeave={handleMouseLeave}
             id={data.id}
             containerId={containerId}
+            ishovering={ishovering}
         >
             <IconButton
                 sx={{ visibility: hoveredRow === data.id ? '' : 'hidden' }}
@@ -174,14 +194,38 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
                     role: 'listbox',
                 }}
             >
-                {Object.entries(categoryToIconMappings).map(([_, value]) => (
+                {Object.entries(categoryToIconMappingsNew).map(([_, category]) => (
+                    <MenuRowBottomBorder
+                        key={category.label}
+                    >
+                        <MenuCategoryDiv>
+                            {category.label}
+                        </MenuCategoryDiv>
+                        <MenuItem
+                            onClick={(event) => handleMenuItemClick(event, category.label)}
+                        >
+                            {category.icon}
+                        </MenuItem>
+                        <MenuRow style={{ display: 'flex', flexDirection: 'row' }}>
+                            {Object.entries(category.subCategories).map(([_, subCategory]) => (
+                                <MenuItem
+                                    key={subCategory.label}
+                                    onClick={(event) => handleMenuItemClick(event, subCategory.label)}
+                                >
+                                    {subCategory.icon}
+                                </MenuItem>
+                            ))}
+                        </MenuRow>
+                    </MenuRowBottomBorder>
+                ))}
+                {/* {Object.entries(categoryToIconMappings).map(([_, value]) => (
                     <MenuItem
                         key={value.label}
                         onClick={(event) => handleMenuItemClick(event, value.label)}
                     >
                         {value.icon}
                     </MenuItem>
-                ))}
+                ))} */}
             </Menu>
             <IconButton onClick={handleClickListItem}>
                 {selectedIcon}
@@ -220,14 +264,15 @@ const DraggableTool = ({ _data, hoveredRow, setHoveredRow, deleteClick, containe
 
 interface DraggableItemProps {
     data: Data;
-    children?: React.ReactNode;
     id: string;
     containerId: string;
+    ishovering?: boolean;
+    children?: React.ReactNode;
     onMouseEnter?: React.MouseEventHandler<HTMLTableRowElement>;
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId }) => {
+const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId, ishovering }) => {
 
     let dataFordndContext = {
         ...data,
@@ -243,13 +288,19 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        color: isDragging ? 'rgba(28, 149, 255, 0.806)' : '',
         height: '40px',
         width: '100%',
-        backgroundColor: '#fff',
-        border: isDragging ? '1px solid rgba(28, 149, 255, 0.806)' : '0.5px solid #6f6f6f',
         borderRadius: '10px',
     };
+
+    if (ishovering || isDragging) {
+        style = {
+            ...style,
+            color: 'rgba(28, 149, 255, 0.806)',
+            backgroundColor: 'rgb(231, 243, 255)',
+            border: '1px solid rgba(28, 149, 255, 0.806)',
+        }
+    }
 
     const styleSortable: React.CSSProperties = {
         transform: CSS.Transform.toString(transform),

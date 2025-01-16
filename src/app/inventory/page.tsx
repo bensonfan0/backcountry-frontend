@@ -12,6 +12,7 @@ import { createContext, useState, useReducer, useContext } from 'react';
 import styled from 'styled-components';
 import { CurrentInventory, CurrentInventoryAction, currentInventoryReducer, InventoryActions } from './inventoryReducer';
 import { v4 } from 'uuid';
+import ActionsHeader from '@/components/actionsHeader/actionsHeader';
 
 const ToolContainer = styled.div`
     width: 25%;
@@ -66,7 +67,6 @@ export function createData(eventData: any) {
 
 function Inventory() {
     const [activeId, setActiveId] = useState<string>('')
-    const [uniqueId, setUniqueId] = useState<number>(1000000); // definitely not bulletproof
     const [hoverContainerId, setHoverContainerId] = useState<string>('')
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
@@ -78,8 +78,7 @@ function Inventory() {
         const containerId = event.active.data.current?.containerId
         const data: Data | undefined = createData(event.active.data.current);
         if (containerId && containerId === TOOL_WINDOW_ID) { // create a new guy
-            data.id = `${data.name}-${String(uniqueId)}`
-            setUniqueId(uniqueId + 1)
+            data.id = `${data.name}-${v4()}`
         }
         if (data === undefined) return
         setData(data);
@@ -97,7 +96,7 @@ function Inventory() {
         if (!(event.over.id in currentInventory)) return
         const newData: Data = {
             ...data,
-            id: `${data.name}-${String(uniqueId)}` // overwrite id
+            id: `${data.name}-${v4()}` // overwrite id
         }
         currentInventoryDispatcher({
             type: InventoryActions.ADD_TOOL,
@@ -107,7 +106,6 @@ function Inventory() {
             }
         })
         setActiveId('')
-        setUniqueId(uniqueId + 1)
         setHoverContainerId('')
     }
 
@@ -122,12 +120,10 @@ function Inventory() {
             currentInventoryDispatcher({
                 type: InventoryActions.SPLICE,
                 payload: {
-                    // currentData: createData(active.data.current),
                     toolId: active.data.current.id,
                     containerId: active.data.current.containerId,
                     overToolId: over.data.current.id,
                     overContainerId: over.data.current.containerId,
-                    uniqueId: uniqueId,
                 }
             })
             currentInventoryDispatcher({
@@ -141,7 +137,6 @@ function Inventory() {
                     }
                 }
             })
-            setUniqueId(uniqueId + 1);
         }
     }
 
@@ -160,11 +155,12 @@ function Inventory() {
                             <ToolWindow />
                         </ToolContainer>
                         <PackContainer>
+                            <ActionsHeader />
                             <ContainerWindow />
                         </PackContainer>
 
                         <DragOverlay>
-                            {activeId !== '' && data && <DraggableTool _data={data} hoveredRow={''} setHoveredRow={(id: string) => { }} deleteClick={(id: string) => { }} containerId={hoverContainerId} />}
+                            {activeId !== '' && data && <DraggableTool _data={data} ishovering={true} containerId={hoverContainerId} />}
                         </DragOverlay>
                     </DndContext>
                 </DroppedDataContext.Provider>

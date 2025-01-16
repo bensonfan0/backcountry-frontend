@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
 import DraggableTool from './draggableTool';
 import { TEST_DATA } from '@/data/testData';
 import { Category, TOOL_WINDOW_ID } from '@/data/constants';
@@ -38,11 +36,6 @@ const ToolContainerBody = styled.div`
     overflow-y: scroll;
 `
 
-const ButtonContainer = styled.div`
-    padding: 10px 0 0 0;
-    width: 20%;
-`
-
 export interface Data {
     id: string;
     name: string;
@@ -50,11 +43,8 @@ export interface Data {
     weight: number;
 }
 
-let initData: Data[] = TEST_DATA
-
 const ToolWindow: React.FC = () => {
     const [hoveredRow, setHoveredRow] = useState<string>('');
-    const [uniqueId, setUniqueId] = useState<number>(initData.length);
 
     const currentInventoryContext = useCurrentInventoryState();
 
@@ -73,22 +63,6 @@ const ToolWindow: React.FC = () => {
             }
         })
     }, [])
-
-    const addClick = () => {
-        currentInventoryContext.currentInventoryDispatcher({
-            type: InventoryActions.ADD_TOOL,
-            payload: {
-                newTool: {
-                    id: String(uniqueId),
-                    name: '',
-                    category: Category.CLOTHING,
-                    weight: 0,
-                },
-                containerId: TOOL_WINDOW_ID,
-            }
-        })
-        setUniqueId(uniqueId + 1);
-    }
 
     const deleteClick = (toolId: string) => {
         currentInventoryContext.currentInventoryDispatcher({
@@ -114,11 +88,6 @@ const ToolWindow: React.FC = () => {
                     </SortableContext>
                 </ToolContainerBody>
             </ToolScrollTable>
-            <ButtonContainer>
-                <IconButton onClick={addClick} color="primary" aria-label="add-gear">
-                    <AddIcon />
-                </IconButton>
-            </ButtonContainer>
         </Container>
     );
 };
