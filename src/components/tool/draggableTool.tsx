@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import ClearIcon from '@mui/icons-material/Clear';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Data } from './toolWindow';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { Menu, MenuItem } from '@mui/material';
@@ -11,6 +11,19 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useCurrentInventoryState } from '@/app/inventory/page';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
+
+const pulse = keyframes`
+    0% {
+        background-color: rgb(231, 243, 255)
+    }
+    100% {
+        background-color: #ffffff;
+    }
+`;
+
+const AnimatedBorderElement = styled.div`
+    animation: ${pulse} 0.5s forwards;
+`;
 
 const ToolName = styled.div`
     font-size: 13px;
@@ -75,7 +88,7 @@ interface DraggableComponentProps {
     deleteClick?: (id: string) => void;
 }
 
-const DraggableTool = ({ _data, containerId, hoveredRow='', setHoveredRow = (id)=>{}, deleteClick = (id)=>{}, ishovering }: DraggableComponentProps) => {
+const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (id) => { }, deleteClick = (id) => { }, ishovering }: DraggableComponentProps) => {
     const [id, _] = useState<string>(_data.id);
     const [data, setData] = useState<Data>(_data);
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
@@ -272,6 +285,8 @@ interface DraggableItemProps {
     onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>;
 }
 
+
+
 const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId, ishovering }) => {
 
     let dataFordndContext = {
@@ -316,7 +331,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
     }
 
     return (
-        <div
+        <AnimatedBorderElement
             style={style}
             ref={setNodeRef}
             onMouseEnter={onMouseEnter}
@@ -333,7 +348,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
                 <DragIndicatorIcon
                 />
             </IconButton>
-        </div>
+        </AnimatedBorderElement>
     );
 };
 

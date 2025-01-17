@@ -24,10 +24,23 @@ const ContainerCardContent = styled.div`
 `;
 
 const ContainerCardTitle = styled.h2`
-    font-size: 1.5em;
+    font-size: 9px;
     margin: 0 0 8px;
     color: #000;
 `;
+
+const DropZone = styled.div`
+    border-radius: 5px;
+    height: 50px;
+    /* width: 100%; */
+    opacity: 0.40;
+    display: flex;
+    align-items: center;
+`
+
+const DropZoneText = styled.div`
+    padding: 0 0 0 10px;
+`
 
 interface DroppableContainerProps {
     id: string,
@@ -95,10 +108,7 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
     };
 
     return (
-        <ContainerCardContainer
-            ref={setNodeRef}
-            style={hoverOverStyle}
-        >
+        <ContainerCardContainer>
             <ContainerCardContent>
                 <ContainerTitleContainer
                     onMouseEnter={() => handleMouseEnter(id)}
@@ -116,14 +126,20 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
                         <ClearIcon sx={{ fontSize: '20px', color: 'red' }} />
                     </IconButton>
                 </ContainerTitleContainer>
+                <DropZone
+                    ref={setNodeRef}
+                    style={hoverOverStyle}
+                >
+                    <DropZoneText>Drop item here to copy</DropZoneText>
+                </DropZone>
                 <ContainerTools>
-                        <SortableContext items={id in currentInventoryContext.currentInventory ? currentInventoryContext.currentInventory[id] : []}>
-                            {id in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[id].map((tool) => {
-                                return (
-                                    <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} containerId={id} />
-                                )
-                            })}
-                        </SortableContext>
+                    <SortableContext items={id in currentInventoryContext.currentInventory ? currentInventoryContext.currentInventory[id] : []}>
+                        {id in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[id].map((tool) => {
+                            return (
+                                <DraggableTool key={tool.id} _data={tool} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClickTools} containerId={id} />
+                            )
+                        })}
+                    </SortableContext>
                 </ContainerTools>
             </ContainerCardContent>
         </ContainerCardContainer>

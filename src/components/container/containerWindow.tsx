@@ -10,7 +10,7 @@ interface CardProps {
 
 const ContainerDiv = styled.div`
     overflow-y: auto;
-    height: calc(100vh - 160px); // two bars (top and action bar)
+    height: calc(100vh - 120px); // two bars (top and action bar)
     margin: 20px 0 0 0;
 `
 
@@ -32,7 +32,7 @@ const ContainerWindow = ({ }: CardProps) => {
         <ContainerDiv>
             {
                 Object.keys(currentInventoryContext.currentInventory).map((value) => {
-                    if (value === TOOL_WINDOW_ID) return
+                    if (value === TOOL_WINDOW_ID) return // don't render the tool window in the backpack field. What we should do is make the tool window its own object in data.
                     const id = `${value}`
                     return <DroppableContainer key={id} id={id} title={value} hoveredContainer={hoveredContainer} setHoveredContainer={setHoveredContainer} deleteClickContainer={deleteClick} />
                 })
