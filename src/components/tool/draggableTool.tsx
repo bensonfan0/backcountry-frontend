@@ -9,7 +9,7 @@ import { Menu, MenuItem } from '@mui/material';
 import { Category, categoryToIconMappings, categoryToIconMappingsNew, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useCurrentInventoryState } from '@/app/inventory/page';
+import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
 
 const pulse = keyframes`
@@ -33,6 +33,12 @@ const ToolName = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &:hover {
+        /* border-color: #b8b8b8;  */
+        background-color: #f4f4f4; 
+        border-radius: 5px;
+    }
 `
 
 const ToolWeight = styled.div`
@@ -41,6 +47,12 @@ const ToolWeight = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &:hover {
+        /* border-color: #007BFF; */
+        background-color: #f4f4f4;
+        border-radius: 5px;
+    }
 `
 
 const ToolTextContainer = styled.div`
@@ -53,12 +65,15 @@ const ToolTextContainer = styled.div`
     text-overflow: ellipsis;
 `
 
-const StyledInput = styled.input`
+interface StyledInputProps {
+    isvalid?: string
+}
+
+const StyledInput = styled.input<StyledInputProps>`
     font-size: inherit;
     color: inherit;
     padding: inherit;
-    border: inherit;
-    /* Add any other styles */
+    ${props => props.isvalid !== undefined && !props.isvalid ? 'border: 3px solid red' : ''};
 `;
 
 const MenuRow = styled.div`
@@ -96,15 +111,17 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryToIconMappings[_data.category].icon);
 
+    const [isValidWeight, setIsValidWeight] = useState<boolean>(true);
+
     const currentInventoryContext = useCurrentInventoryState();
 
     const open = Boolean(anchorEl);
 
-    const handleDoubleClickName = () => {
+    const handleClickName = () => {
         setIsEditingName(true);
     };
 
-    const handleDoubleClickWeight = () => {
+    const handleClickWeight = () => {
         setIsEditingWeight(true);
     };
 
@@ -131,8 +148,15 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
     };
 
     const handleChangeWeight = (e: ChangeEvent<HTMLInputElement>) => {
+        if (/^\d*$/.test(e.target.value)) {
+            setIsValidWeight(true);
+        } else {
+            setIsValidWeight(false);
+            return;
+        }
         let newTool = { ...data }
         newTool.weight = Number(e.target.value)
+
         setData(newTool) // this could be a race condition as we wait for the data to change...
         currentInventoryContext.currentInventoryDispatcher({
             type: InventoryActions.REPLACE_TOOL,
@@ -244,7 +268,7 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
                 {selectedIcon}
             </IconButton>
             <ToolTextContainer>
-                <ToolName onDoubleClick={handleDoubleClickName}>
+                <ToolName onClick={handleClickName}>
                     {isEditingName ? (
                         <StyledInput
                             type="text"
@@ -257,9 +281,10 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
                         data.name
                     }
                 </ToolName>
-                <ToolWeight onDoubleClick={handleDoubleClickWeight}>
+                <ToolWeight onClick={handleClickWeight}>
                     {isEditingWeight ? (
                         <StyledInput
+                            isvalid={isValidWeight.toString()}
                             type="text"
                             value={data.weight}
                             onChange={handleChangeWeight}

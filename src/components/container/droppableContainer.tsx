@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import styled from 'styled-components';
 import DraggableTool from '../tool/draggableTool';
-import { DroppedDataContext, useCurrentInventoryState } from '@/app/inventory/page';
+import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
+import { DroppedDataContext } from '@/app/inventory/CurrentInventoryContext';
 import IconButton from '@mui/material/IconButton';
 import ClearIcon from '@mui/icons-material/Clear';
 import { SortableContext } from '@dnd-kit/sortable';
@@ -83,7 +84,7 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
             newWeight += tool.weight
         })
         setWeight(newWeight)
-    }, [currentInventoryContext.currentInventory]) // this is very important to render when it changes
+    }, [currentInventoryContext.currentInventory, id]) // this is very important to render when it changes
 
     const hoverOverStyle: React.CSSProperties = {
         backgroundColor: isOver ? '#e1ffca' : '#fff',
@@ -126,12 +127,14 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
                         <ClearIcon sx={{ fontSize: '20px', color: 'red' }} />
                     </IconButton>
                 </ContainerTitleContainer>
-                <DropZone
-                    ref={setNodeRef}
-                    style={hoverOverStyle}
-                >
-                    <DropZoneText>Drop item here to copy</DropZoneText>
-                </DropZone>
+                {id in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[id].length === 0 &&
+                    <DropZone
+                        ref={setNodeRef}
+                        style={hoverOverStyle}
+                    >
+                        <DropZoneText>Drop item here to add</DropZoneText>
+                    </DropZone>
+                }
                 <ContainerTools>
                     <SortableContext items={id in currentInventoryContext.currentInventory ? currentInventoryContext.currentInventory[id] : []}>
                         {id in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[id].map((tool) => {

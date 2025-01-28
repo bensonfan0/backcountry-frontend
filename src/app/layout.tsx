@@ -37,7 +37,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" style={{ height: '100%' }} suppressHydrationWarning>
-      <body className={inter.className} style={{ height: '100%', margin: 0 }}>
+      <body className={inter.className} style={{ height: '100%', margin: 0 }} suppressHydrationWarning>
         <PageWithHeader>
           <Header />
           <Page>

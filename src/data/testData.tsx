@@ -1,7 +1,5 @@
 import { Category } from "./constants"
 
-console.log(Category.CLOTHING)
-
 export const TEST_DATA = [
     {
         id: '0',

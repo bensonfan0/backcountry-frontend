@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
-import { useCurrentInventoryState } from '@/app/inventory/page';
+import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
 import { Category, TOOL_WINDOW_ID } from '@/data/constants';
 import { v4 } from 'uuid';
@@ -30,7 +30,7 @@ const ActionsHeader: React.FC = () => {
             payload: {
                 newTool: {
                     id: String(v4()),
-                    name: '',
+                    name: 'Click To Edit',
                     category: Category.CLOTHING,
                     weight: 0,
                 },

@@ -8,11 +8,12 @@ import { TEST_DATA } from '@/data/testData';
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { unique } from 'next/dist/build/utils';
-import { createContext, useState, useReducer, useContext } from 'react';
+import { useState, useReducer } from 'react';
 import styled from 'styled-components';
-import { CurrentInventory, CurrentInventoryAction, currentInventoryReducer, InventoryActions } from './inventoryReducer';
+import { createData, currentInventoryReducer, InventoryActions } from './inventoryReducer';
 import { v4 } from 'uuid';
 import ActionsHeader from '@/components/actionsHeader/actionsHeader';
+import { CurrentInventoryContext, DroppedDataContext } from './CurrentInventoryContext';
 
 const ToolContainer = styled.div`
     width: 25%;
@@ -30,47 +31,12 @@ const Page = styled.div`
     height: calc(100vh - 40px);
 `
 
-
-interface DroppedDataContextType {
-    data: Data | undefined;
-    droppableId: string;
-    droppedCount: number; // this can't be the right way to track when something is dropped
-}
-
-interface CurrentInventoryContextType {
-    currentInventory: CurrentInventory;
-    currentInventoryDispatcher: React.Dispatch<CurrentInventoryAction>;
-}
-
-export const DroppedDataContext = createContext<DroppedDataContextType | undefined>(undefined);
-
-export const CurrentInventoryContext = createContext<CurrentInventoryContextType | undefined>(undefined);
-
-export const useCurrentInventoryState = () => {
-    const context = useContext(CurrentInventoryContext);
-    if (context === undefined) {
-        throw new Error('useCurrentInventoryState must be used within a CountProvider');
-    }
-    return context;
-};
-
-export function createData(eventData: any) {
-    const data: Data = {
-        name: eventData.name,
-        weight: eventData.weight,
-        category: eventData.category,
-        id: eventData.id,
-    };
-    return data;
-}
-
-
 function Inventory() {
     const [activeId, setActiveId] = useState<string>('')
     const [hoverContainerId, setHoverContainerId] = useState<string>('')
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
-    const [data, setData] = useState<Data>({id: "none", category: Category.ACCESSORIES, weight: 0, name: ''})
+    const [data, setData] = useState<Data>({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '' })
     const [currentInventory, currentInventoryDispatcher] = useReducer(currentInventoryReducer, {});
 
     function handleDragStart(event: DragStartEvent) {
@@ -87,7 +53,7 @@ function Inventory() {
     }
 
     function handleDragEnd(event: DragEndEvent) {
-        const data: Data | undefined = createData(event.active.data.current);
+        // const data: Data | undefined = createData(event.active.data.current);
         if (!data || event.over === undefined || event.over === null) return
         if (event.over.data.current?.containerId === TOOL_WINDOW_ID) {
             return // do nothing
@@ -105,6 +71,7 @@ function Inventory() {
                 containerId: String(event.over.id)
             }
         })
+        setData({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '' })
         setActiveId('')
         setHoverContainerId('')
     }
@@ -124,6 +91,7 @@ function Inventory() {
                     containerId: active.data.current.containerId,
                     overToolId: over.data.current.id,
                     overContainerId: over.data.current.containerId,
+                    // tool: data
                 }
             })
             currentInventoryDispatcher({
@@ -137,10 +105,17 @@ function Inventory() {
                     }
                 }
             })
+        } else if (active && active.data.current && (over === null || over.data.current === undefined)) {
+            if (active.data.current.containerId === TOOL_WINDOW_ID) return // we came from gear window, do nothing
+            // currentInventoryDispatcher({
+            //     type: InventoryActions.FILTER_FROM_CONTAINERS,
+            //     payload: {
+            //         containerId: active.data.current.containerId,
+            //         toolId: active.data.current.id
+            //     }
+            // })
         }
     }
-
-    // console.log(currentInventory)
 
     return (
         <Page>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import DroppableContainer from './droppableContainer';
-import { useCurrentInventoryState } from '@/app/inventory/page';
+import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
 import { TOOL_WINDOW_ID } from '@/data/constants';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
 

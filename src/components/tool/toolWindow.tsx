@@ -4,27 +4,32 @@ import DraggableTool from './draggableTool';
 import { TEST_DATA } from '@/data/testData';
 import { Category, TOOL_WINDOW_ID } from '@/data/constants';
 import { SortableContext } from '@dnd-kit/sortable';
-import { useCurrentInventoryState } from '@/app/inventory/page';
+import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
+import CustomizedInputBase from './search/searchTextField';
 
 
 const Container = styled.div`
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
     width: 400px;
-`
+    `
 
 const ToolScrollTable = styled.div`
-    width: 80%;
-    height: calc(100vh - 40px);
-    overflow-y: auto;
-    padding: 0 20px 0 0;
     background-color: #fff;
+    width: 80%;
+    height: calc(100vh - 85px);
+    overflow-y: auto;
+    padding: 0 0 0 0;
     box-shadow: 1px 1px 5px 0px rgba(1, 1, 1, 0.05);
 `
 
 const ToolContainerHeader = styled.div`
+    background-color: #fff;
     display: flex;
+    width: 80%;
+    box-shadow: 1px 1px 5px 0px rgba(1, 1, 1, 0.05);
 `
 
 const ToolContainerBody = styled.div`
@@ -45,6 +50,8 @@ export interface Data {
 
 const ToolWindow: React.FC = () => {
     const [hoveredRow, setHoveredRow] = useState<string>('');
+    const [searchName, setSearchName] = useState<RegExp>(/.*/);
+    const [items, setItems] = useState<Data[]>([]);
 
     const currentInventoryContext = useCurrentInventoryState();
 
@@ -62,7 +69,13 @@ const ToolWindow: React.FC = () => {
                 newTools: TEST_DATA
             }
         })
+        // is this going to run into error before it's set?
+        setItems(currentInventoryContext.currentInventory[TOOL_WINDOW_ID])
     }, [])
+
+    useEffect(() => {
+
+    }, [searchName])
 
     const deleteClick = (toolId: string) => {
         currentInventoryContext.currentInventoryDispatcher({
@@ -74,15 +87,21 @@ const ToolWindow: React.FC = () => {
         })
     }
 
+    const onChange = (name: string) => {
+        const splitName = name.split('').join('.*');
+        setSearchName(new RegExp(`.*${splitName}.*`));
+    }
+
     return (
         <Container>
+            <ToolContainerHeader>
+                {/* planning to be a search bar */}
+                <CustomizedInputBase onChange={onChange} />
+            </ToolContainerHeader>
             <ToolScrollTable>
-                <ToolContainerHeader>
-                    {/* planning to be a search bar */}
-                </ToolContainerHeader>
                 <ToolContainerBody>
                     <SortableContext items={TOOL_WINDOW_ID in currentInventoryContext.currentInventory ? currentInventoryContext.currentInventory[TOOL_WINDOW_ID] : []}>
-                        {TOOL_WINDOW_ID in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[TOOL_WINDOW_ID].map((row) => {
+                        {TOOL_WINDOW_ID in currentInventoryContext.currentInventory && currentInventoryContext.currentInventory[TOOL_WINDOW_ID].filter((item) => searchName.test(item.name.toLowerCase())).map((row) => {
                             return <DraggableTool key={row.id} _data={row} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow} deleteClick={deleteClick} containerId={TOOL_WINDOW_ID} />
                         })}
                     </SortableContext>
