@@ -22,7 +22,7 @@ const ToolContainer = styled.div`
 `
 
 const PackContainer = styled.div`
-    width: 25%;
+    width: 60%;
 `
 
 const Page = styled.div`
