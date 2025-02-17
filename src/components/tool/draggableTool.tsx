@@ -6,7 +6,7 @@ import { Data } from './toolWindow';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { Menu, MenuItem } from '@mui/material';
 
-import { Category, categoryToIconMappings, categoryToIconMappingsNew, TOOL_WINDOW_ID } from '@/data/constants';
+import { Category, categoryMappings, categoryToIconMappingsNew, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
@@ -109,7 +109,7 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
     const [isEditingWeight, setIsEditingWeight] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryToIconMappings[_data.category].icon);
+    const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryMappings[_data.category].icon);
 
     const [isValidWeight, setIsValidWeight] = useState<boolean>(true);
 
@@ -184,7 +184,7 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
         event: React.MouseEvent<HTMLElement>,
         category: Category,
     ) => {
-        setSelectedIcon(categoryToIconMappings[category].icon)
+        setSelectedIcon(categoryMappings[category].icon)
         let newTool = { ...data }
         newTool.category = category
         setData(newTool)
