@@ -4,16 +4,14 @@ import ContainerWindow from '@/components/container/containerWindow';
 import DraggableTool from '@/components/tool/draggableTool';
 import ToolWindow, { Data } from '@/components/tool/toolWindow';
 import { Category, TOOL_WINDOW_ID } from '@/data/constants';
-import { TEST_DATA } from '@/data/testData';
-import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
-import { unique } from 'next/dist/build/utils';
+import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useState, useReducer } from 'react';
 import styled from 'styled-components';
 import { createData, currentInventoryReducer, InventoryActions } from './inventoryReducer';
 import { v4 } from 'uuid';
 import ActionsHeader from '@/components/actionsHeader/actionsHeader';
 import { CurrentInventoryContext, DroppedDataContext } from './CurrentInventoryContext';
+import { CurrentClicked, CurrentClickedContext, useCurrentClickedState } from './CurrentClickedContext';
 
 const ToolContainer = styled.div`
     width: 25%;
@@ -39,9 +37,18 @@ function Inventory() {
     const [data, setData] = useState<Data>({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '' })
     const [currentInventory, currentInventoryDispatcher] = useReducer(currentInventoryReducer, {});
 
+    // TODO:
+    // show user which item is selected
+    // implement the same tab grouping feature on browsers
+    // let users shift or ctrl to select multiple items
+    // items will be grouped (shows up the same in the the droppable container)
+    // group items MUST be next to each other
+    // there should be one title that users can interact with to change the name of the group
+    const [currentClicked, setCurrentClicked] = useState<CurrentClicked[]>([])
+
     function handleDragStart(event: DragStartEvent) {
-        // TODO: This should be a constructor, and data should at this point be a class of its own
         const containerId = event.active.data.current?.containerId
+        // TODO: This should be a constructor, and data should at this point be a class of its own
         const data: Data | undefined = createData(event.active.data.current);
         if (containerId && containerId === TOOL_WINDOW_ID) { // create a new guy
             data.id = `${data.name}-${v4()}`
@@ -50,6 +57,14 @@ function Inventory() {
         setData(data);
         setHoverContainerId(containerId)
         setActiveId(String(event.active.id))
+
+        // TODO: check if shift is being clicked?
+        // setCurrentClicked([
+        //     {
+        //         containerId: containerId,
+        //         id: String(event.active.id)
+        //     }
+        // ])
     }
 
     function handleDragEnd(event: DragEndEvent) {
@@ -107,39 +122,47 @@ function Inventory() {
             })
         } else if (active && active.data.current && (over === null || over.data.current === undefined)) {
             if (active.data.current.containerId === TOOL_WINDOW_ID) return // we came from gear window, do nothing
-            // currentInventoryDispatcher({
-            //     type: InventoryActions.FILTER_FROM_CONTAINERS,
-            //     payload: {
-            //         containerId: active.data.current.containerId,
-            //         toolId: active.data.current.id
-            //     }
-            // })
         }
     }
 
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 5
+            }
+        }),
+    );
+
     return (
         <Page>
-            <CurrentInventoryContext.Provider value={{ currentInventory, currentInventoryDispatcher }}>
-                <DroppedDataContext.Provider value={{ data, droppableId, droppedCount }}>
-                    <DndContext
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={handleDragOver}
-                    >
-                        <ToolContainer>
-                            <ToolWindow />
-                        </ToolContainer>
-                        <PackContainer>
-                            <ActionsHeader />
-                            <ContainerWindow />
-                        </PackContainer>
+            <CurrentClickedContext.Provider value={{ currentClicked, setCurrentClicked }}>
+                <CurrentInventoryContext.Provider value={{ currentInventory, currentInventoryDispatcher }}>
+                    <DroppedDataContext.Provider value={{ data, droppableId, droppedCount }}>
+                        <DndContext
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                            sensors={sensors}
+                        >
+                            <ToolContainer>
+                                <ToolWindow />
+                            </ToolContainer>
+                            <PackContainer>
+                                <ActionsHeader />
+                                <ContainerWindow />
+                            </PackContainer>
 
-                        <DragOverlay>
-                            {activeId !== '' && data && <DraggableTool _data={data} ishovering={true} containerId={hoverContainerId} />}
-                        </DragOverlay>
-                    </DndContext>
-                </DroppedDataContext.Provider>
-            </CurrentInventoryContext.Provider>
+                            <DragOverlay>
+                                {currentClicked.map((currentClicked: CurrentClicked, index) => {
+                                    let _data = currentInventory[currentClicked.containerId].find(data => data.id === currentClicked.id)
+                                    return <DraggableTool key={index} _data={_data ? _data : data} ishovering={true} containerId={hoverContainerId} />
+                                })}
+                                {/* {activeId !== '' && data && <DraggableTool _data={data} ishovering={true} containerId={hoverContainerId} />} */}
+                            </DragOverlay>
+                        </DndContext>
+                    </DroppedDataContext.Provider>
+                </CurrentInventoryContext.Provider>
+            </CurrentClickedContext.Provider>
         </Page>
     )
 }

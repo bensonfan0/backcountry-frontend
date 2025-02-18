@@ -9,8 +9,9 @@ import { Menu, MenuItem } from '@mui/material';
 import { Category, categoryMappings, categoryToIconMappingsNew, TOOL_WINDOW_ID } from '@/data/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
+import { CurrentInventoryContext, useCurrentInventoryState } from '@/app/inventory/CurrentInventoryContext';
 import { InventoryActions } from '@/app/inventory/inventoryReducer';
+import { CurrentClicked, isClicked, useCurrentClickedState } from '@/app/inventory/CurrentClickedContext';
 
 const pulse = keyframes`
     0% {
@@ -110,7 +111,6 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
     const [isEditingWeight, setIsEditingWeight] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedIcon, setSelectedIcon] = useState<JSX.Element>(categoryMappings[_data.category].icon);
-
     const [isValidWeight, setIsValidWeight] = useState<boolean>(true);
 
     const currentInventoryContext = useCurrentInventoryState();
@@ -255,14 +255,6 @@ const DraggableTool = ({ _data, containerId, hoveredRow = '', setHoveredRow = (i
                         </MenuRow>
                     </MenuRowBottomBorder>
                 ))}
-                {/* {Object.entries(categoryToIconMappings).map(([_, value]) => (
-                    <MenuItem
-                        key={value.label}
-                        onClick={(event) => handleMenuItemClick(event, value.label)}
-                    >
-                        {value.icon}
-                    </MenuItem>
-                ))} */}
             </Menu>
             <IconButton onClick={handleClickListItem}>
                 {selectedIcon}
@@ -313,6 +305,8 @@ interface DraggableItemProps {
 
 
 const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMouseEnter, onMouseLeave, containerId, ishovering }) => {
+    const currentClickedContext = useCurrentClickedState();
+    const currentInventoryContext = useCurrentInventoryState();
 
     let dataFordndContext = {
         ...data,
@@ -333,11 +327,18 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         borderRadius: '10px',
     };
 
+    if (isClicked(containerId, id, currentClickedContext.currentClicked)) {
+        style = {
+            ...style,
+            border: '1px solid rgba(40, 40, 40, 0.495)',
+        }
+    }
+
     if (ishovering || isDragging) {
         style = {
             ...style,
             color: 'rgba(28, 149, 255, 0.806)',
-            backgroundColor: 'rgb(231, 243, 255)',
+            backgroundColor: 'rgba(231, 243, 255, 0.776)',
             border: '1px solid rgba(28, 149, 255, 0.806)',
         }
     }
@@ -355,20 +356,60 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ data, children, id, onMou
         }
     }
 
+    const handleOnClickDragIndicator = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.shiftKey) {
+            // always look at the last item pushed into the array
+            let lastSelectedIndex = currentInventoryContext.currentInventory[containerId].findIndex((data) => {
+                return data.id === currentClickedContext.currentClicked[currentClickedContext.currentClicked.length-1].id
+            })
+            let currentSelectedIndex = currentInventoryContext.currentInventory[containerId].findIndex((data) => {
+                return data.id === id
+            })
+
+            let minIndex = Math.min(lastSelectedIndex, currentSelectedIndex)
+            let maxIndex = Math.max(lastSelectedIndex, currentSelectedIndex)
+            
+            let newClicked = currentInventoryContext.currentInventory[containerId].slice(minIndex, maxIndex+1)
+            currentClickedContext.setCurrentClicked(newClicked.map(data => {
+                return {
+                    id: data.id,
+                    containerId: containerId
+                }
+            }))
+        }
+        else if (event.ctrlKey || event.metaKey) {
+            console.log('Meta key is pressed!');
+            // this should be a dispatcher and reducer combo i think
+            currentClickedContext.setCurrentClicked(prev => [
+                ...prev,
+                {
+                    containerId: containerId,
+                    id: id
+                }
+            ])
+        } else {
+            currentClickedContext.setCurrentClicked([
+                {
+                    containerId: containerId,
+                    id: id
+                }
+            ])
+        }
+    }
+
     return (
         <AnimatedBorderElement
             style={style}
             ref={setNodeRef}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
+            onClick={(event) => handleOnClickDragIndicator(event)}
         >
             {children}
             <IconButton
                 ref={setActivatorNodeRef}
                 {...attributes}
                 {...listeners}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f2f2f2'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
             >
                 <DragIndicatorIcon
                 />

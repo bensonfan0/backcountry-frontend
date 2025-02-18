@@ -15,7 +15,9 @@ interface CurrentInventoryContextType {
 
 export const DroppedDataContext = createContext<DroppedDataContextType | undefined>(undefined);
 
-export const CurrentInventoryContext = createContext<CurrentInventoryContextType | undefined>(undefined);export const useCurrentInventoryState = () => {
+export const CurrentInventoryContext = createContext<CurrentInventoryContextType | undefined>(undefined);
+
+export const useCurrentInventoryState = () => {
     const context = useContext(CurrentInventoryContext);
     if (context === undefined) {
         throw new Error('useCurrentInventoryState must be used within a CountProvider');
