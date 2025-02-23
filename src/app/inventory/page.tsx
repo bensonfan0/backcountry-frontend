@@ -11,7 +11,8 @@ import { createData, currentInventoryReducer, InventoryActions } from './invento
 import { v4 } from 'uuid';
 import ActionsHeader from '@/components/actionsHeader/actionsHeader';
 import { CurrentInventoryContext, DroppedDataContext } from './CurrentInventoryContext';
-import { CurrentClicked, CurrentClickedContext, useCurrentClickedState } from './CurrentClickedContext';
+import { CurrentClickedContext } from './CurrentClickedContext';
+import { itemsEqual } from '@dnd-kit/sortable/dist/utilities';
 
 const ToolContainer = styled.div`
     width: 25%;
@@ -34,7 +35,7 @@ function Inventory() {
     const [hoverContainerId, setHoverContainerId] = useState<string>('')
     const [droppableId, setDroppableId] = useState<string>('')
     const [droppedCount, setDroppedCount] = useState<number>(0)
-    const [data, setData] = useState<Data>({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '' })
+    const [data, setData] = useState<Data>({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '', containerId: '' })
     const [currentInventory, currentInventoryDispatcher] = useReducer(currentInventoryReducer, {});
 
     // TODO:
@@ -44,7 +45,7 @@ function Inventory() {
     // items will be grouped (shows up the same in the the droppable container)
     // group items MUST be next to each other
     // there should be one title that users can interact with to change the name of the group
-    const [currentClicked, setCurrentClicked] = useState<CurrentClicked[]>([])
+    const [currentClicked, setCurrentClicked] = useState<Data[]>([])
 
     function handleDragStart(event: DragStartEvent) {
         const containerId = event.active.data.current?.containerId
@@ -80,13 +81,19 @@ function Inventory() {
             id: `${data.name}-${v4()}` // overwrite id
         }
         currentInventoryDispatcher({
-            type: InventoryActions.ADD_TOOL,
+            type: InventoryActions.ADD_TOOLS,
             payload: {
-                newTool: newData,
+                newTools: currentClicked.map(item => {
+                    return {
+                        ...item,
+                        id: v4()
+                    }
+                }),
                 containerId: String(event.over.id)
             }
         })
-        setData({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '' })
+        setCurrentClicked([])
+        setData({ id: "this_is_empty", category: Category.ACCESSORIES, weight: 0, name: '', containerId: '' })
         setActiveId('')
         setHoverContainerId('')
     }
@@ -99,25 +106,21 @@ function Inventory() {
         const { active, over } = event;
         if (active && over && active.data.current && over.data.current && active.id !== over.id) {
             if (over.data.current.containerId === TOOL_WINDOW_ID) return // do nothing
+            console.log("what.. i don't get here? what do you mean?")
             currentInventoryDispatcher({
                 type: InventoryActions.SPLICE,
                 payload: {
-                    toolId: active.data.current.id,
-                    containerId: active.data.current.containerId,
+                    currentClicked: currentClicked,
                     overToolId: over.data.current.id,
                     overContainerId: over.data.current.containerId,
-                    // tool: data
+                    containerId: active.data.current.containerId,
                 }
             })
             currentInventoryDispatcher({
-                type: InventoryActions.REPLACE_TOOL,
+                type: InventoryActions.REPLACE_TOOLS,
                 payload: {
                     containerId: TOOL_WINDOW_ID,
-                    toolId: active.data.current.id,
-                    newTool: {
-                        ...data,
-                        id: v4()
-                    }
+                    toBeReplaced: currentClicked,
                 }
             })
         } else if (active && active.data.current && (over === null || over.data.current === undefined)) {
@@ -132,6 +135,8 @@ function Inventory() {
             }
         }),
     );
+    // console.log(currentClicked)
+    // TODO: THE CONTAINER ID IN TOOL IN INVENOTRY IS WRONGLY SET... BIG ISSUE BUT NOT CRITICAL
 
     return (
         <Page>
@@ -153,9 +158,9 @@ function Inventory() {
                             </PackContainer>
 
                             <DragOverlay>
-                                {currentClicked.map((currentClicked: CurrentClicked, index) => {
-                                    let _data = currentInventory[currentClicked.containerId].find(data => data.id === currentClicked.id)
-                                    return <DraggableTool key={index} _data={_data ? _data : data} ishovering={true} containerId={hoverContainerId} />
+                                {currentClicked.map((currentClicked: Data, index) => {
+                                    if (!(currentClicked.containerId in currentInventory)) return <></>
+                                    return <DraggableTool key={index} _data={currentClicked} ishovering={true} containerId={hoverContainerId} />
                                 })}
                                 {/* {activeId !== '' && data && <DraggableTool _data={data} ishovering={true} containerId={hoverContainerId} />} */}
                             </DragOverlay>

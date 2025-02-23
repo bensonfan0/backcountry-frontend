@@ -33,6 +33,7 @@ const ActionsHeader: React.FC = () => {
                     name: 'Click To Edit',
                     category: Category.CLOTHING,
                     weight: 0,
+                    containerId: TOOL_WINDOW_ID
                 },
                 containerId: TOOL_WINDOW_ID,
             }

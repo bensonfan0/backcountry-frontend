@@ -168,6 +168,7 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
             ]
         })
         setWeight(totalWeight)
+        // console.log('hrng')
     }, [currentInventoryContext.currentInventory, id]) // this is very important to render when it changes
 
     const hoverOverStyle: React.CSSProperties = {
@@ -215,7 +216,7 @@ const DroppableContainer = ({ id, title, hoveredContainer, deleteClickContainer,
                         ref={setNodeRef}
                         style={hoverOverStyle}
                     >
-                        <DropZoneText>Drop item here to add</DropZoneText>
+                        <DropZoneText>Drop items here to add</DropZoneText>
                     </DropZone>
                 }
                 <ContainerTools>

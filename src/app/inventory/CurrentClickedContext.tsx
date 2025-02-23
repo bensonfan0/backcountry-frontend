@@ -3,19 +3,19 @@ import { Data } from "@/components/tool/toolWindow";
 import { createContext, useContext } from "react";
 
 // there's got to be a better way to do this?
-export interface CurrentClicked {
+export interface _ {
     containerId: string,
     id: string,
 }
 
 interface CurrentClickedContextType {
-    currentClicked: CurrentClicked[];
-    setCurrentClicked: React.Dispatch<React.SetStateAction<CurrentClicked[]>>;
+    currentClicked: Data[];
+    setCurrentClicked: React.Dispatch<React.SetStateAction<Data[]>>;
 }
 
-export const isClicked = (containerId: string, id: string, currentClicked: CurrentClicked[]) => {
-    return -1 !== currentClicked.findIndex((currentClicked: CurrentClicked) => {
-        if (currentClicked.containerId === containerId && currentClicked.id === id) return true
+export const isClicked = (id: string, currentClicked: Data[]) => {
+    return -1 !== currentClicked.findIndex((currentClicked: Data) => {
+        if (currentClicked.id === id) return true
     })
 }
 

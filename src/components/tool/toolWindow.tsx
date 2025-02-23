@@ -46,6 +46,7 @@ export interface Data {
     name: string;
     category: Category;
     weight: number;
+    containerId: string;
 }
 
 const ToolWindow: React.FC = () => {
@@ -74,7 +75,6 @@ const ToolWindow: React.FC = () => {
     }, [])
 
     useEffect(() => {
-
     }, [searchName])
 
     const deleteClick = (toolId: string) => {
